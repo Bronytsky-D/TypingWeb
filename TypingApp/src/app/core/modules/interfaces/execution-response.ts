@@ -1,7 +1,7 @@
 import { RecordResponse } from "./record-response";
 
-export interface ExecutionResponse<T> {
+export interface ExecutionResponse {
   success: boolean;
-  message?: string;
-  data?: T;
+  message: string;
+  result: RecordResponse[];
 }

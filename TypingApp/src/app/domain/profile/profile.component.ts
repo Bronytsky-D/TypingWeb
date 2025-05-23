@@ -51,20 +51,20 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.userService.getProfile(this.authService.getUserDetail()?.id).subscribe(
-    //   (response: ExecutionResponse<UserProfile>) => {
-    //     if (response.success && response.data) {
-    //       this.userDetail = response.data;
-    //       this.animateLevel(response.data.level);
-    //     }
-    //   },
-    //   error => console.error('Error loading user profile', error)
-    // );
+    this.userService.getProfile(this.authService.getUserDetail()?.id).subscribe(
+      (response: UserProfile) => {
+        if (response) {
+          this.userDetail = response;
+          this.animateLevel(response.level);
+        }
+      },
+      error => console.error('Error loading user profile', error)
+    );
 
     this.recordService.read(this.authService.getUserDetail()?.id).subscribe(
-      (response: ExecutionResponse<RecordResponse[]>) => {
-        if (response.success && response.data) {
-          this.records = response.data;
+      (response: ExecutionResponse) => {
+        if (response.success &&response.result ) {
+          this.records = response.result;
           this.reversedRecords = [...this.records].reverse();
           this.calculationTimeTyping();
           this.prepareHeatmapData();
