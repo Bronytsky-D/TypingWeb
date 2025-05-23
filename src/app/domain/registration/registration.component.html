@@ -1,0 +1,25 @@
+<div class="wrapper">
+    <div class="card-title">Registration</div>
+    <div class="wrapper-input">
+      <input type="email" name="email" id="user-email" [(ngModel)]="email" required spellcheck="false">
+      <span class="placeholder" [class.active]>
+        email
+      </span>
+    </div>
+    <div class="wrapper-input">
+      <input type="password"  name="password" id="user-password" [(ngModel)]="password" required spellcheck="false">
+      <span class="placeholder" [class.active]>
+        password
+      </span>
+    </div>
+    <div class="wrapper-input">
+        <input type="password"  name="password-conf" [(ngModel)]="password_conf" id="user-password-conf" required spellcheck="false">
+        <span class="placeholder" [class.active]>
+            password confirmation
+        </span>
+      </div>
+    <div class="button">
+      <button routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</button>
+      <button (click)="register()">Registration</button>
+    </div>
+  </div>
