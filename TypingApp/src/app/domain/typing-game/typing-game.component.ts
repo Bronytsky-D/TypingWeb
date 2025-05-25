@@ -122,6 +122,12 @@ export class TypingGameComponent {
     const accuracy = Math.floor(((this.currentPosition - this.numberOfMistake.length) / this.currentPosition) * 100);
     const consistency = 100;
 
+    let multiplier = 1.0;
+    if (this.gameTime >= 60000 || this.numberOfWords >= 50) multiplier = 1.2;
+    if (this.numberOfWords >= 125 || this.gameTime >= 90000) multiplier = 1.5;
+
+    const xp = Math.round((wpm * accuracy * multiplier) / 100);
+
     console.log(`Game Over! Time: ${elapsedSeconds} seconds, Mistakes: ${this.numberOfMistake.length}, WPM: ${wpm}, raw${raw} ,accuracy ${accuracy} ,consistency ${consistency}`);
     if (this.authService.getUserDetail() !== null && this.currentPosition >= 5) {
       const recordRequest: RecordRequset = {
@@ -131,7 +137,8 @@ export class TypingGameComponent {
         accuracy: accuracy,
         consistency: consistency,
         chars: this.currentPosition,
-        matchTime: elapsedSeconds
+        matchTime: elapsedSeconds,
+        experience: xp
       };
       this.recordService.write(recordRequest).subscribe(
         response => {

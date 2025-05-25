@@ -6,4 +6,6 @@ export interface RecordRequset {
     consistency: number;
     chars: number;
     matchTime: number;
+    experience: number;
+    
 }

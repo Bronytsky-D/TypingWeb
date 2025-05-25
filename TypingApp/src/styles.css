@@ -1,32 +1,151 @@
-:root{
-    --bgColor: #333;
-    --textPrimary: #fff;
-    --textSecondary: #666;
-    --primaryColor: #f58518;
+:root {
+  --bgColor: #1e1e1e;
+  --textPrimary: #ffffff;
+  --textSecondary: #aaaaaa;
+  --primaryColor: #f58518;
+  --errorColor: #e53935;
+  --successColor: #4caf50;
+  --borderColor: #444;
+  --cardBg: rgba(255, 255, 255, 0.06);
+  --inputBg: rgba(255, 255, 255, 0.1);
 }
-body{
-    font-family: 'Roboto', sans-serif;
-    background-color:var(--bgColor);
-    color: var(--textPrimary);
-    font-size: 1.4rem;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-main{
-    width: 600px;
-    margin: 50px auto;
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--bgColor);
+  color: var(--textPrimary);
+  font-size: 1rem;
+  line-height: 1.6;
 }
-button{
-    width: 130px;
-    height: 30px;
-    margin: 10px;
-    background: rgba(255,255,255,.2);
-    border:0;
-    color: rgba(255,255,255,.5);
-    padding: 5px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s;
+
+main {
+  width: 100%;
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 20px;
 }
+
+/* Buttons */
+button {
+  background: var(--inputBg);
+  border: none;
+  color: var(--textPrimary);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+}
+
 button:hover {
-    background-color: #f58518; 
-    box-shadow: 0 1px 2px #f58518;
+  background-color: var(--primaryColor);
+  box-shadow: 0 2px 6px var(--primaryColor);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Forms */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 20px;
+  border: 1px solid var(--borderColor);
+  border-radius: 6px;
+  background-color: var(--inputBg);
+  color: var(--textPrimary);
+  font-size: 1rem;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primaryColor);
+}
+
+/* Containers */
+.container {
+  padding: 20px;
+  border-radius: 8px;
+  background-color: var(--cardBg);
+  backdrop-filter: blur(10px);
+}
+
+/* Typography */
+h1, h2, h3, h4 {
+  color: var(--primaryColor);
+  margin-bottom: 15px;
+}
+
+p {
+  color: var(--textSecondary);
+}
+
+/* Utilities */
+.text-center {
+  text-align: center;
+}
+
+.flex {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card {
+  padding: 20px;
+  background-color: var(--cardBg);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Error Message */
+.error {
+  background-color: var(--errorColor);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Input Wrapper for Floating Labels */
+.input-wrapper {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.input-wrapper input {
+  padding: 14px 10px 6px 10px;
+}
+
+.input-wrapper label {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 0.9rem;
+  color: var(--textSecondary);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus + label,
+.input-wrapper input:valid + label {
+  top: -10px;
+  left: 8px;
+  font-size: 0.75rem;
+  color: var(--primaryColor);
+  background: var(--bgColor);
+  padding: 0 4px;
 }

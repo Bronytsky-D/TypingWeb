@@ -1,0 +1,6 @@
+<h2>Список уроків</h2>
+<ul>
+  <li *ngFor="let lesson of lessons">
+    <strong>{{ lesson.title }}</strong>: {{ lesson.description }}
+  </li>
+</ul>
