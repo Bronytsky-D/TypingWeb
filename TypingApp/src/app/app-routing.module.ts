@@ -6,6 +6,7 @@ import { TypingGameComponent } from './domain/typing-game/typing-game.component'
 import { LayoutComponent } from './layout/layout.component'
 import { ProfileComponent } from './domain/profile/profile.component';
 import { LessonListComponent } from './domain/lesson-list/lesson-list.component';
+import { LessonComponent } from './domain/lesson/lesson.component';
 
 const routes: Routes = [
   {
@@ -15,7 +16,8 @@ const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'registration', component: RegistrationComponent },
       { path: 'profile', component: ProfileComponent },
-      { path: 'lesson-list', component: LessonListComponent}
+      { path: 'lesson-list', component: LessonListComponent},
+      { path: 'lesson/:id', component: LessonComponent}
     ]
   }
 ];

@@ -1,0 +1,48 @@
+.lesson-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: var(--textPrimary);
+}
+
+.lesson-list h2 {
+    font-size: 1.8rem;
+    color: var(--primaryColor);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.lesson-item {
+    background-color: var(--cardBg);
+    border: 1px solid var(--borderColor);
+    border-left: 4px solid var(--primaryColor);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: background-color 0.2s ease;
+}
+
+.lesson-item:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.lesson-item strong {
+    font-size: 1.2rem;
+    color: var(--textPrimary);
+}
+
+.lesson-item button {
+    margin-top: 0.8rem;
+    background-color: var(--inputBg);
+    color: var(--textPrimary);
+    border: 1px solid var(--primaryColor);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lesson-item button:hover {
+    background-color: var(--primaryColor);
+    color: #fff;
+}

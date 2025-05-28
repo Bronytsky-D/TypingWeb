@@ -1,0 +1,13 @@
+<header class="header">
+  <div class="nav-links">
+    <a routerLink="/lesson-list" routerLinkActive="active">Уроки</a>
+    <a routerLink="/typing-game" routerLinkActive="active">Гра</a>
+    <a *ngIf="authService.isLoggedIn()" routerLink="/profile" routerLinkActive="active">Профіль</a>
+  </div>
+
+  <div class="auth-actions">
+    <a *ngIf="!authService.isLoggedIn()" routerLink="/login">Увійти</a>
+    <a *ngIf="!authService.isLoggedIn()" routerLink="/registration">Реєстрація</a>
+    <a *ngIf="authService.isLoggedIn()" (click)="logout()">Вийти</a>
+  </div>
+</header>

@@ -17,6 +17,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './core/modules/services/auth.interceptor';
 import { LessonListComponent } from './domain/lesson-list/lesson-list.component';
 import { LessonComponent } from './domain/lesson/lesson.component';
+import { HeaderComponent } from './layout/header/header.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { LessonComponent } from './domain/lesson/lesson.component';
     LayoutComponent,
     ProfileComponent,
     LessonListComponent,
-    LessonComponent
+    LessonComponent,
+    HeaderComponent
   ],
   imports: [
     BrowserModule,

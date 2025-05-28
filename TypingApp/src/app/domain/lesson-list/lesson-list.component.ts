@@ -6,9 +6,9 @@ import { LessonService } from '../../core/modules/services/lesson.service';
   selector: 'app-lesson-list',
   standalone: false,
   templateUrl: './lesson-list.component.html',
-  styleUrls: ['./lesson-list.component.css'] // ← має бути style**Urls**, не styleUrl
+  styleUrls: ['./lesson-list.component.css'] 
 })
-export class LessonListComponent implements OnInit { // ← implements OnInit
+export class LessonListComponent implements OnInit { 
   lessons: Lesson[] = [];
 
   constructor(private lessonService: LessonService) {}

@@ -1,0 +1,56 @@
+.header {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: var(--cardBg);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links a {
+  color: var(--textPrimary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-links a.active {
+  color: var(--primaryColor);
+  font-weight: bold;
+  border-bottom: 2px solid var(--primaryColor);
+}
+
+.auth-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.auth-actions a {
+  color: var(--textPrimary);
+  background-color: var(--inputBg);
+  padding: 6px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.auth-actions a:hover {
+  background-color: var(--primaryColor);
+  color: #fff;
+}
