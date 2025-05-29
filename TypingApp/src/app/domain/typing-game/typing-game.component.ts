@@ -3,6 +3,12 @@ import { letterView } from '../../letterView'
 import { AuthService } from '../../core/modules/services/auth.service';
 import { RecordService } from '../../core/modules/services/record.service';
 import { RecordRequset } from '../../core/modules/interfaces/record-resquest';
+import { WordStat } from '../../core/modules/interfaces/word.stat';
+import { Router } from '@angular/router';
+import { GameResultService } from '../../core/modules/services/game-result.service';
+import { GameResults } from '../../core/modules/interfaces/game-result';
+import { Mistake } from '../../core/modules/interfaces/mistake';
+import { cell } from '@observablehq/plot';
 
 
 @Component({
@@ -19,7 +25,7 @@ export class TypingGameComponent {
   timer: any = null;
   gameStart: any = null;
   pauseTime = 0;
-  numberOfMistake: number[] = [];
+  mistakes: Mistake[] = [];
   lettersContainer: letterView[] = [];
   currentPosition: number = 0;
   interval: any;
@@ -32,8 +38,17 @@ export class TypingGameComponent {
   isGameActive: boolean = false;
   elapsedTime: number = 0;
 
+  wordStats: WordStat[] = [];
+  currentWordStartTime: number = 0;
 
-  constructor(private authService: AuthService, private recordService: RecordService) { }
+
+  wpmTimeline: { second: number; wpm: number }[] = [];
+  elapsedSeconds: number = 0;
+  charsTypedAtSecondStart: number = 0;
+  mistakeTimeline: number[] = [];
+  wpmInterval: any;
+
+  constructor(private authService: AuthService, private recordService: RecordService, private router: Router, private gameResultService: GameResultService) { }
 
   ngOnInit(): void {
     this.newGame();
@@ -45,13 +60,23 @@ export class TypingGameComponent {
   }
   fillingVariables(): void {
     this.gameElement.nativeElement.classList.remove('over');
-    this.numberOfMistake = [];
+    this.mistakes = [];
     this.lettersContainer = [];
     this.currentPosition = 0;
     this.wordsCounter = 0;
     clearInterval(this.interval);
     this.isGameActive = false;
     this.pauseTime = 0;
+    this.wordStats = [];
+    this.currentWordStartTime = Date.now();
+    this.elapsedSeconds = 0;
+    this.wpmTimeline = [];
+    this.mistakeTimeline = [];
+    this.charsTypedAtSecondStart = 0;
+    clearInterval(this.wpmInterval);
+    this.elapsedSeconds = 0;
+    this.charsTypedAtSecondStart = 0;
+
   }
 
   newGame(): void {
@@ -92,9 +117,11 @@ export class TypingGameComponent {
   }
 
   startTimer(): void {
+    // 🔁 Таймер гри — для завершення гри, оновлення хв/секунд
     this.interval = setInterval(() => {
       if (this.isGameActive) {
         this.elapsedTime = Date.now() - this.gameStart;
+
         if (this.selectedMode === 'time') {
           const remainingTime = this.gameTime - this.elapsedTime;
           if (remainingTime <= 0) {
@@ -107,7 +134,23 @@ export class TypingGameComponent {
         }
       }
     }, 1000);
+
+    // 🔁 Таймер WPM по секундах
+    this.wpmInterval = setInterval(() => {
+      if (!this.isGameActive) return;
+
+      const seconds = Math.floor((Date.now() - this.gameStart) / 1000); // ✅ точний час
+      const charsNow = this.currentPosition;
+      const charsTypedThisSecond = charsNow - this.charsTypedAtSecondStart;
+      this.charsTypedAtSecondStart = charsNow;
+
+      const wpm = (charsTypedThisSecond / 5) * 60;
+      this.wpmTimeline.push({ second: seconds, wpm });
+
+      console.log(`[WPM] t=${seconds}s → ${Math.round(wpm)} WPM`);
+    }, 1000);
   }
+
 
   gameOver(): void {
     clearInterval(this.timer);
@@ -118,7 +161,7 @@ export class TypingGameComponent {
 
     const wpm = Math.floor((this.currentPosition / 5) / (elapsedTime / 60000));
     const raw = Math.floor(this.currentPosition);
-    const accuracy = Math.floor(((this.currentPosition - this.numberOfMistake.length) / this.currentPosition) * 100);
+    const accuracy = Math.floor(((this.currentPosition - this.mistakes.length) / this.currentPosition) * 100);
     const consistency = 100;
 
     let multiplier = 1.0;
@@ -127,7 +170,7 @@ export class TypingGameComponent {
 
     const xp = Math.round((wpm * accuracy * multiplier) / 100);
 
-    console.log(`Game Over! Time: ${elapsedSeconds} seconds, Mistakes: ${this.numberOfMistake.length}, WPM: ${wpm}, raw${raw} ,accuracy ${accuracy} ,consistency ${consistency}`);
+    console.log(`Game Over! Time: ${elapsedSeconds} seconds, Mistakes: ${this.mistakes.length}, WPM: ${wpm}, raw${raw} ,accuracy ${accuracy} ,consistency ${consistency}`);
     if (this.authService.getUserDetail() !== null && this.currentPosition >= 5) {
       const recordRequest: RecordRequset = {
         userId: this.authService.getUserDetail()?.id,
@@ -152,7 +195,16 @@ export class TypingGameComponent {
     if (gameElement) {
       gameElement.classList.add('over');
     }
-    this.newGame();
+
+    const results: GameResults = {
+      gameStats: { wpm, raw, accuracy, matchTime: elapsedSeconds, xp, mistakes: this.mistakes.length },
+      wordStats: this.wordStats,
+      wpmTimeline: this.wpmTimeline
+    };
+    this.gameResultService.setResults(results);
+    this.router.navigate(['/result']);
+
+    // this.newGame();
   }
 
   pauseTimer(): void {
@@ -189,17 +241,89 @@ export class TypingGameComponent {
   }
 
   increasePocition(key: string) {
-    console.log(key, this.currentPosition, this.lastIndex);
-    if (this.isCorrektLetter(key)) {
-      this.lettersContainer[this.currentPosition].isCorrect = true;
-      this.currentPosition++;
+    const cell = this.lettersContainer[this.currentPosition];
+    cell.typed = key;      // ← записуємо, що ввів користувач
+    if (cell.letter === key) {
+      cell.isCorrect = true;
     } else {
-      if (!this.numberOfMistake.includes(this.currentPosition)) {
-        this.numberOfMistake.push(this.currentPosition);
-      }
-      this.lettersContainer[this.currentPosition].isMistake = true;
-      this.currentPosition++;
+      cell.isMistake = true;
+      this.mistakes.push({ position: cell.index, expected: cell.letter, actual: key, timestamp: Date.now() });
     }
+    this.currentPosition++;
+    this.updateCursorPosition();
+    if (this.isLastLetter() && this.selectedMode === 'words') this.gameOver();
+  }
+
+
+  decreasePocition(): void {
+    if (this.currentPosition > 0) {
+      this.currentPosition--;
+      const cell = this.lettersContainer[this.currentPosition];
+
+      cell.isCorrect = false;
+      cell.isMistake = false;
+      // якщо є поле typed — очистити його
+      if ('typed' in cell) {
+        (cell as any).typed = '';
+      }
+
+      // видалити об’єкт помилки за position
+      const idx = this.mistakes.findIndex(m => m.position === cell.index);
+      if (idx > -1) {
+        this.mistakes.splice(idx, 1);
+      }
+
+      this.updateCursorPosition();
+    }
+  }
+
+
+  spacePosition(): void {
+    const pos = this.currentPosition;
+    const cell = this.lettersContainer[pos];
+    const expected = cell.letter;
+    const isSpaceExpected = expected === ' ';
+    const hasTypedLetters = this.hasTypedLettersForCurrentWord();
+
+    cell.typed = ' ';
+
+    if (!isSpaceExpected) {
+      cell.isMistake = true;
+      if (!this.mistakes.find(m => m.position === pos)) {
+        this.mistakes.push({ position: pos, expected, actual: ' ', timestamp: Date.now() });
+      }
+      this.currentPosition++;
+      this.updateCursorPosition();
+      return;
+    }
+
+    if (hasTypedLetters) {
+      const now = Date.now();
+      const typedWord = this.getTypedWord();
+      const correctWord = this.getCorrectWord();
+      const mistakesCnt = this.countMistakes(typedWord, correctWord);
+      const duration = now - this.currentWordStartTime;
+      const durationMin = duration / 60000;
+      const wpm = durationMin > 0
+        ? Math.round(1 / durationMin)
+        : 0;
+
+      this.wordStats.push({
+        word: correctWord,
+        typed: typedWord,
+        durationMs: duration,
+        mistakes: mistakesCnt,
+        wpm
+      });
+
+      this.currentWordStartTime = now;
+    }
+
+
+    // тепер просуваємо курсор і фіксуємо коректний пробіл
+    cell.isCorrect = true;
+    this.wordsCounter++;
+    this.currentPosition++;
     this.updateCursorPosition();
 
     if (this.isLastLetter() && this.selectedMode === 'words') {
@@ -207,36 +331,48 @@ export class TypingGameComponent {
     }
   }
 
-  decreasePocition(): void {
-    if (this.currentPosition > 0) {
-      this.currentPosition--;
-      this.lettersContainer[this.currentPosition].isCorrect = false;
-      this.lettersContainer[this.currentPosition].isMistake = false;
-
-      // Remove this position from numberOfMistake if it exists
-      const mistakeIndex = this.numberOfMistake.indexOf(this.currentPosition);
-      if (mistakeIndex > -1) {
-        this.numberOfMistake.splice(mistakeIndex, 1);
-      }
-
-      this.updateCursorPosition();
-    }
+  hasTypedLettersForCurrentWord(): boolean {
+    const wordLetters = this.lettersContainer
+      .slice(this.getCurrentWordStartIndex(), this.currentPosition)
+      .filter(l => l.letter !== ' '); // ігнорувати пробіли
+    return wordLetters.some(l => l.isCorrect || l.isMistake);
+  }
+  getTypedWord(): string {
+    const start = this.getCurrentWordStartIndex();
+    return this.lettersContainer
+      .slice(start, this.currentPosition)
+      .map(l => l.typed)
+      .join('');
   }
 
-  spacePosition(): void {
-    if (this.isCorrektLetter(' ')) {
-      this.lettersContainer[this.currentPosition].isCorrect = true;
-      this.wordsCounter++;
-      this.currentPosition++
-    } else {
-      if (!this.numberOfMistake.includes(this.currentPosition)) {
-        this.numberOfMistake.push(this.currentPosition);
-      }
-      this.lettersContainer[this.currentPosition].isMistake = true
-      this.currentPosition++;
-    }
-    this.updateCursorPosition();
+
+  getCorrectWord(): string {
+    const start = this.getCurrentWordStartIndex();
+    return this.lettersContainer
+      .slice(start, this.currentPosition)
+      .map(l => l.letter)
+      .join('');
   }
+
+  getCurrentWordStartIndex(): number {
+    let index = this.currentPosition;
+    while (index > 0 && this.lettersContainer[index - 1].letter !== ' ') {
+      index--;
+    }
+    return index;
+  }
+
+
+  countMistakes(typed: string, correct: string): number {
+    let count = 0;
+    const max = Math.max(typed.length, correct.length);
+    for (let i = 0; i < max; i++) {
+      if (typed[i] !== correct[i]) count++;
+    }
+    return count;
+  }
+
+
 
   getStyles(letter: letterView) {
     return this.isCurrent(letter.index) ? 'letter current' : letter.isCorrect ? 'letter correct' : letter.isMistake ?
@@ -267,6 +403,7 @@ export class TypingGameComponent {
     }, 0);
   }
 
+
   selectMode(mode: string): void {
     this.selectedMode = mode;
     this.newGame()
@@ -289,4 +426,6 @@ export class TypingGameComponent {
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
   }
+
+
 }

@@ -1,5 +1,6 @@
 export class letterView {
     index: number;
+    typed: string = '';
     letter: string;
     isMistake: boolean = false;
     isCorrect: boolean = false;

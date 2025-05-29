@@ -1,0 +1,40 @@
+<div class="result-wrapper">
+  <h2>Результати гри</h2>
+
+  <div class="summary-cards">
+    <div class="card"><strong>WPM</strong><p>{{ gameStats?.wpm }}</p></div>
+    <div class="card"><strong>Accuracy</strong><p>{{ gameStats?.accuracy }}%</p></div>
+    <div class="card"><strong>Mistakes</strong><p>{{ gameStats?.mistakes }}</p></div>
+    <div class="card"><strong>Time</strong><p>{{ gameStats?.matchTime }}s</p></div>
+  </div>
+
+  <div class="chart-section">
+    <h3>WPM по секундах</h3>
+    <canvas baseChart
+            [data]="wpmChartData"
+            [options]="chartOptions"
+            [type]="'line'">
+    </canvas>
+  </div>
+
+  <div class="word-table">
+    <h3>Статистика по словах</h3>
+    <table>
+      <thead>
+        <tr><th>Слово</th><th>Введено</th><th>WPM</th><th>Помилок</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let w of wordStats">
+          <td>{{ w.word }}</td>
+          <td>{{ w.typed }}</td>
+          <td>{{ w.wpm }}</td>
+          <td>{{ w.mistakes }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="restart-button">
+    <button routerLink="/typing-game">Зіграти ще раз</button>
+  </div>
+</div>

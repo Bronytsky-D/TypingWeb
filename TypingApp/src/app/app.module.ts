@@ -18,6 +18,7 @@ import { AuthInterceptor } from './core/modules/services/auth.interceptor';
 import { LessonListComponent } from './domain/lesson-list/lesson-list.component';
 import { LessonComponent } from './domain/lesson/lesson.component';
 import { HeaderComponent } from './layout/header/header.component';
+import { ResultComponent } from './domain/result/result.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { HeaderComponent } from './layout/header/header.component';
     ProfileComponent,
     LessonListComponent,
     LessonComponent,
-    HeaderComponent
+    HeaderComponent,
+    ResultComponent
   ],
   imports: [
     BrowserModule,
