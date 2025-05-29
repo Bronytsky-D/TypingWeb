@@ -4,6 +4,8 @@ import { AuthService } from '../../core/modules/services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { LessonService } from '../../core/modules/services/lesson.service';
 import { Lesson } from '../../core/modules/interfaces/lesson';
+import { ProgressService } from '../../core/modules/services/progress.service';
+import { LessonProgress } from '../../core/modules/interfaces/lesson-progress';
 
 @Component({
   selector: 'app-lesson',
@@ -14,7 +16,7 @@ import { Lesson } from '../../core/modules/interfaces/lesson';
 export class LessonComponent {
   lesson?: Lesson;
   @ViewChild('cursor') cursor!: ElementRef;
-  @ViewChild('lesson', { static: true }) lessonElement!: ElementRef;
+  @ViewChild('lessonContainer', { static: true }) lessonElement!: ElementRef;
   timer: any = null;
   gameStart: any = null;
   pauseTime = 0;
@@ -33,7 +35,8 @@ export class LessonComponent {
 
 
   constructor(private authService: AuthService, private route: ActivatedRoute,
-    private lessonService: LessonService) { }
+    private lessonService: LessonService,
+    private progressService: ProgressService) { }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -77,7 +80,7 @@ export class LessonComponent {
 
     this.lessonElement.nativeElement.blur();
 
-    const letters = this.generateLessonText(this.lesson!.keys, 60); // 60 груп = 60 слів
+    const letters = this.generateLessonText(this.lesson!.keys, 10); // 60 груп = 60 слів
     console.log('Lesson keys:', this.lesson?.keys);
     console.log('Generated letters:', letters);
     this.lettersContainer = letters;
@@ -119,26 +122,20 @@ export class LessonComponent {
 
     console.log(`Game Over! Time: ${elapsedSeconds} seconds, Mistakes: ${this.numberOfMistake.length}, WPM: ${wpm}, raw${raw} ,accuracy ${accuracy} ,consistency ${consistency}`);
     if (this.authService.getUserDetail() !== null && this.currentPosition >= 5) {
-      // const recordRequest: RecordRequset = {
-      //   userId: this.authService.getUserDetail()?.id,
-      //   wpm: wpm,
-      //   raw: raw,
-      //   accuracy: accuracy,
-      //   consistency: consistency,
-      //   chars: this.currentPosition,
-      //   matchTime: elapsedSeconds,
-      //   experience: xp
-
-      // };
-      // this.recordService.write(recordRequest).subscribe(
-      //   response => {
-      //     console.log('Record successfully saved', response);
-      //   },
-      //   error => {
-      //     console.error('Error saving record', error);
-      //   })
-      console.log(`${this.numberOfMistake.length},wpm - ${wpm} ,raw - ${raw},acc - ${accuracy},cons ${consistency}`)
+      const model: LessonProgress = {
+        userId: this.authService.getUserDetail().id,
+        lessonId: this.lesson!.id,
+        bestWpm: wpm,
+        bestRaw: raw,
+        bestAccuracy: accuracy
+      };
+          this.progressService.saveProgress(model)
+      .subscribe(
+        _ => {},
+        err => console.error('Progress save failed', err)
+      );
     }
+
     const gameElement = document.getElementById('game');
     if (gameElement) {
       gameElement.classList.add('over');
@@ -188,6 +185,7 @@ export class LessonComponent {
     }
     this.updateCursorPosition();
     this.highlightExpectedKey(this.lettersContainer[this.currentPosition]?.letter);
+    if (this.isLastLetter()) this.gameOver();
   }
 
   decreasePocition(): void {

@@ -167,3 +167,58 @@ div.word {
   transition: all 0.15s ease;
 }
 
+.lesson-info {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+}
+
+.lesson-info h2 {
+  margin-top: 0;
+  font-size: 1.75rem;
+  color: var(--primaryColor);
+}
+
+.lesson-info .description {
+  margin: 0.5rem 0 1rem;
+  font-style: italic;
+  color: var(--textSecondary);
+}
+
+.lesson-info .content {
+  line-height: 1.6;
+  font-size: 1rem;
+  background: #fff;
+  padding: 1rem;
+  border-left: 4px solid var(--primaryColor);
+  border-radius: 4px;
+}
+
+/* Адаптація під загальний компонент */
+.lesson-info,
+div#lesson,
+.keyboard-wrapper {
+  font-family: 'Roboto', sans-serif;
+}
+
+@media (max-width: 768px) {
+  .lesson-info {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .lesson-info h2 {
+    font-size: 1.5rem;
+  }
+  .lesson-info .content {
+    font-size: 0.9rem;
+  }
+  div#lesson {
+    width: 90%;
+    height: auto;
+  }
+}

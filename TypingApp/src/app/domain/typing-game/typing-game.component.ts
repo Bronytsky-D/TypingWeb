@@ -262,12 +262,10 @@ export class TypingGameComponent {
 
       cell.isCorrect = false;
       cell.isMistake = false;
-      // якщо є поле typed — очистити його
       if ('typed' in cell) {
         (cell as any).typed = '';
       }
 
-      // видалити об’єкт помилки за position
       const idx = this.mistakes.findIndex(m => m.position === cell.index);
       if (idx > -1) {
         this.mistakes.splice(idx, 1);
@@ -320,7 +318,6 @@ export class TypingGameComponent {
     }
 
 
-    // тепер просуваємо курсор і фіксуємо коректний пробіл
     cell.isCorrect = true;
     this.wordsCounter++;
     this.currentPosition++;

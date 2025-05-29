@@ -1,10 +1,10 @@
+<!-- header.component.html -->
 <header class="header">
-  <div class="nav-links">
+  <nav class="nav-links" aria-label="Основна навігація">
     <a routerLink="/lesson-list" routerLinkActive="active">Уроки</a>
     <a routerLink="/typing-game" routerLinkActive="active">Гра</a>
     <a *ngIf="authService.isLoggedIn()" routerLink="/profile" routerLinkActive="active">Профіль</a>
-  </div>
-
+  </nav>
   <div class="auth-actions">
     <a *ngIf="!authService.isLoggedIn()" routerLink="/login">Увійти</a>
     <a *ngIf="!authService.isLoggedIn()" routerLink="/registration">Реєстрація</a>

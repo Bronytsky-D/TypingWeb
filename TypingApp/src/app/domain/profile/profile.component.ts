@@ -62,7 +62,7 @@ export class ProfileComponent implements OnInit {
     );
 
     this.recordService.read(this.authService.getUserDetail()?.id).subscribe(
-      (response: ExecutionResponse) => {
+      (response: ExecutionResponse<RecordResponse[]>) => {
         if (response.success &&response.result ) {
           this.records = response.result;
           this.reversedRecords = [...this.records].reverse();

@@ -1,6 +1,11 @@
+<div class="lesson-info" *ngIf="lesson">
+  <h2>{{ lesson.title }}</h2>
+  <p class="description">{{ lesson.description }}</p>
+  <div class="content">{{ lesson.content }}</div>
+</div>
 <div id="lesson" tabindex="0" (click)="this.focusGame()" (blur)="pauseTimer()" appKeyup
   (actionAllowKey)="this.increasePocition($event)" (actionBackspace)="this.decreasePocition()"
-  (actionSpace)="this.spacePosition()" #lesson>
+  (actionSpace)="this.spacePosition()" #lessonContainer>
   <div id="words" class="words-container">
     <div class="word">
       <span *ngFor="let letter of lettersContainer" [ngClass]="getStyles(letter)">{{ letter.letter }}</span>
@@ -15,7 +20,6 @@
   </span>
 </div>
 <div class="keyboard-wrapper">
-  <!-- <img src="assets/hands.png" alt="hands" class="hands-img" /> -->
   <div class="keyboard">
     <div class="row">
       <div class="key" id="q">q</div>
