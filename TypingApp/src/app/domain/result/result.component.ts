@@ -1,60 +1,155 @@
-import { Component, Input } from '@angular/core';
-import { WordStat } from '../../core/modules/interfaces/word.stat';
-import { Router } from '@angular/router';
+// src/app/domain/result/result.component.ts
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { GameResultService } from '../../core/modules/services/game-result.service';
+import { LessonService } from '../../core/modules/services/lesson.service';
+import { Lesson } from '../../core/modules/interfaces/lesson';
+import { WordStat } from '../../core/modules/interfaces/word.stat';
 
 @Component({
   selector: 'app-result',
-  standalone: false,
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    NgChartsModule
+  ],
   templateUrl: './result.component.html',
-  styleUrl: './result.component.css'
+  styleUrls: ['./result.component.css']
 })
-export class ResultComponent {
-  gameStats: any = null;
-  wordStats: WordStat[] = [];
-  wpmTimeline: { second: number; wpm: number }[] = [];
-
-  wpmChartData: ChartConfiguration<'line'>['data'] = {
-    labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'WPM',
-        borderColor: '#f58518',
-        backgroundColor: 'rgba(245, 133, 24, 0.2)',
-        tension: 0.3,
-        fill: true,
-      }
-    ]
+export class ResultComponent implements OnInit {
+  gameStats!: {
+    wpm: number;
+    raw: number;
+    accuracy: number;
+    mistakes: number;
+    matchTime: number;
+    xp: number;
+    mode: number;
+    gameLength: number;
+    language: string;
   };
+  wpmTimeline: { second: number; wpm: number }[] = [];
+  mistakeTimeline: { second: number; mistakes: number }[] = [];
+  wordStats: WordStat[] = [];
 
-  chartOptions: ChartConfiguration<'line'>['options'] = {
+  mistakeLetters: string[] = [];
+  lessonsForMistakes: Lesson[] = [];
+  generatedLesson!: Lesson;
+
+  wpmChartData!: ChartConfiguration<'line'>['data'];
+  wpmChartOptions: ChartConfiguration<'line'>['options'] = {
     responsive: true,
-    plugins: { legend: { display: true } },
+    plugins: { legend: { display: false } },
     scales: {
       x: { title: { display: true, text: 'Секунди' } },
-      y: { beginAtZero: true, title: { display: true, text: 'WPM' } }
+      y: { title: { display: true, text: 'WPM' }, beginAtZero: true }
     }
   };
 
-  constructor(private router: Router,private gameResultService: GameResultService) {
-    const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras.state;
-    if (state) {
-      this.gameStats = state['gameStats'];
-      this.wordStats = state['wordStats'];
-      this.wpmChartData = state['wpmChartData'];
+  mistakeChartData!: ChartConfiguration<'bar'>['data'];
+  mistakeChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { title: { display: true, text: 'Секунди' } },
+      y: { title: { display: true, text: 'Кількість помилок' }, beginAtZero: true }
     }
+  };
+
+  constructor(
+    private gameResult: GameResultService,
+    private lessonService: LessonService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const res = this.gameResult.getResults();
+    this.gameStats = res.gameStats;
+    this.wpmTimeline = res.wpmTimeline || [];
+    this.mistakeTimeline = res.mistakeTimeline || [];
+    this.wordStats = res.wordStats || [];
+
+    this.buildWpmChart();
+    this.buildMistakeChart();
+    this.extractMistakeLetters();
+    this.matchLessons();
+    this.buildGeneratedLesson();
   }
 
-
- ngOnInit(): void {
-    const { gameStats, wordStats, wpmTimeline } = this.gameResultService.getResults();
-    this.gameStats = gameStats;
-    this.wordStats = wordStats;
-    this.wpmChartData.labels = wpmTimeline.map(p => `${p.second}s`);
-    this.wpmChartData.datasets[0].data = wpmTimeline.map(p => p.wpm);
+  private buildWpmChart() {
+    const labels = this.wpmTimeline.map(p => p.second.toString());
+    const data = this.wpmTimeline.map(p => Math.round(p.wpm));
+    this.wpmChartData = {
+      labels,
+      datasets: [{
+        data,
+        label: 'WPM по секундах',
+        borderColor: '#42A5F5',
+        backgroundColor: 'rgba(66,165,245,0.3)',
+        fill: false,
+        tension: 0.3
+      }]
+    };
   }
 
+  private buildMistakeChart() {
+    const labels = this.mistakeTimeline.map(p => p.second.toString());
+    const data = this.mistakeTimeline.map(p => p.mistakes);
+    this.mistakeChartData = {
+      labels,
+      datasets: [{
+        data,
+        label: 'Помилки по секундах',
+        backgroundColor: 'rgba(245,50,50,0.6)'
+      }]
+    };
+  }
+
+  getChars(w: WordStat): string[] {
+    return w.typed.split('');
+  }
+
+  private extractMistakeLetters(): void {
+    const mistakes = this.wordStats
+      .filter(w => w.mistakes > 0)
+      .flatMap(w =>
+        w.typed
+          .split('')
+          .filter((c, i) => c !== w.word[i])
+      );
+    this.mistakeLetters = Array.from(new Set(mistakes));
+  }
+
+  private matchLessons(): void {
+    this.lessonService.getLessons().subscribe(all => {
+      this.lessonsForMistakes = all.filter(lesson =>
+        lesson.keys.some(k => this.mistakeLetters.includes(k))
+      );
+    });
+  }
+
+  private buildGeneratedLesson(): void {
+    this.generatedLesson = {
+      id: 0,
+      title: 'Практика помилкових букв',
+      description: 'Повторіть букви: ' + this.mistakeLetters.join(', '),
+      keys: this.mistakeLetters,
+      content: 'Практика: ' + this.mistakeLetters.join(' ')
+    };
+  }
+
+  startGeneratedLesson(): void {
+    this.router.navigate(
+      ['/lesson', 'practice'],
+      { state: { lesson: this.generatedLesson } }
+    );
+  }
+
+  goToLesson(id: number): void {
+    this.router.navigate(['/lesson', id]);
+  }
 }

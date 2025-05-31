@@ -5,6 +5,9 @@ import { ProgressService } from '../../core/modules/services/progress.service';
 import { AuthService } from '../../core/modules/services/auth.service';
 import { LessonProgress } from '../../core/modules/interfaces/lesson-progress';
 import { ExecutionResponse } from '../../core/modules/interfaces/execution-response';
+import { LessonProgressResponse } from '../../core/modules/interfaces/lesson-progress-response';
+import{ LessonWithState } from './interfaces/lesson-state'
+import { forkJoin, map } from 'rxjs';
 
 @Component({
   selector: 'app-lesson-list',
@@ -13,45 +16,71 @@ import { ExecutionResponse } from '../../core/modules/interfaces/execution-respo
   styleUrls: ['./lesson-list.component.css']
 })
 export class LessonListComponent implements OnInit {
-  lessons: Lesson[] = [];
-  unlocked = new Set<number>();
-  progressPercent: { [lessonId: number]: number } = {};
-  private userId: string;
-  private threshold = 50; // відсотків для розблокування
+   lessons: LessonWithState[] = [];
 
   constructor(
     private lessonService: LessonService,
     private progressService: ProgressService,
-    private auth: AuthService
-  ) {
-    this.userId = this.auth.getUserDetail().id;
-  }
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    const userId = this.authService.getUserDetail().id;
+
+    // Спочатку завантажуємо уроки
     this.lessonService.getLessons().subscribe(lessons => {
-      this.lessons = lessons;
-      if (!lessons.length) return;
-      this.unlocked.add(lessons[0].id);
-      lessons.forEach((lesson, idx) => {
-        this.progressService.getProgress(this.userId, lesson.id)
-          .subscribe((resp: ExecutionResponse<LessonProgress>) => {
-            if (!resp.success || !resp.result) return;
-            const best = resp.result.bestAccuracy;
-            this.progressPercent[lesson.id] = best;
-            if (best >= this.threshold && idx < lessons.length - 1) {
-              this.unlocked.add(lessons[idx + 1].id);
-            }
-          });
+      console.log('Lessons loaded:', lessons);
+      
+      // Потім намагаємося завантажити прогрес
+      this.progressService.getProgress(userId).subscribe({
+        next: (progress) => {
+          console.log('Progress loaded:', progress);
+          this.processLessonsWithProgress(lessons, progress);
+        },
+        error: (error) => {
+          console.log('No progress found (404), using default state:', error);
+          // Якщо прогресу немає (404), створюємо базовий стан
+          this.processLessonsWithProgress(lessons, { success: true, result: [] });
+        }
       });
     });
   }
 
-  isUnlocked(id: number): boolean {
-    return this.unlocked.has(id);
-  }
+  private processLessonsWithProgress(lessons: Lesson[], progress: any): void {
+    // Отримуємо масив прогресу з відповіді сервера
+    const progressArray = progress.success ? progress.result : [];
+    
+    // Створюємо мапу прогресу за lessonId
+    const progMap = new Map<number, LessonProgressResponse>();
+    progressArray.forEach((p: LessonProgressResponse) => progMap.set(p.lessonId, p));
 
-  select(lesson: Lesson): void {
-    if (!this.isUnlocked(lesson.id)) return;
-    // навігація в урок
+    // Сортуємо уроки за id
+    const sorted = lessons.slice().sort((a, b) => a.id - b.id);
+
+    // Мапимо в LessonWithState з логікою поступового відкриття
+    const lessonsWithState = sorted.map((lesson, idx) => {
+      const progressData = progMap.get(lesson.id);
+      const isCompleted = progressData ? progressData.progressPercent >= 80 : false;
+      
+      // Перший урок завжди відкритий, наступні відкриваються тільки якщо попередній пройдений
+      let isUnlocked = false;
+      if (idx === 0) {
+        isUnlocked = true; // Перший урок завжди доступний
+      } else {
+        const prevLesson = sorted[idx - 1];
+        const prevProgress = progMap.get(prevLesson.id);
+        isUnlocked = prevProgress ? prevProgress.progressPercent >= 80 : false;
+      }
+
+      return {
+        ...lesson,
+        isCompleted,
+        isUnlocked,
+        progressData: progressData || null // Додаємо дані прогресу
+      } as LessonWithState & { progressData: LessonProgressResponse | null };
+    });
+
+    console.log('Lessons with state:', lessonsWithState);
+    this.lessons = lessonsWithState as LessonWithState[];
   }
 }

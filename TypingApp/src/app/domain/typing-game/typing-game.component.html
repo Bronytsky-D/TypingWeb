@@ -1,13 +1,3 @@
-<!-- <div *ngIf="isLoggedIn()" class="button">
-  <button routerLink="/profile" routerLinkActive="active" ariaCurrentWhenActive="page">Profile</button>
-  <button routerLink="/lesson-list" routerLinkActive="active" ariaCurrentWhenActive="page">lesson-list</button>
-</div>
-<div *ngIf="!isLoggedIn()" class="button">
-  <button routerLink="/login" routerLinkActive="active" ariaCurrentWhenActive="page">Login</button>
-  <button routerLink="/registration" routerLinkActive="active" ariaCurrentWhenActive="page">Registration</button>
-</div> -->
-
-
 <div class="config-wrapper">
   <div class="menu-config">
     <div class="mode">
@@ -54,6 +44,16 @@
       </div>
       <div class="text-button" (click)="selectWords(125)" [class.active]="numberOfWords === 125">
         <span>125</span>
+      </div>
+    </div>
+    <div class="language">
+      <div class="text-button button-conteiner" (click)="selectLanguage('en')"
+        [class.active]="selectedLanguage === 'en'">
+        <span>EN</span>
+      </div>
+      <div class="text-button button-conteiner" (click)="selectLanguage('uk')"
+        [class.active]="selectedLanguage === 'uk'">
+        <span>UA</span>
       </div>
     </div>
   </div>

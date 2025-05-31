@@ -1,43 +1,144 @@
-.result-wrapper {
-  width: 80%;
+/* src/app/domain/result/result.component.css */
+
+.result-container {
+  max-width: 700px;
   margin: 0 auto;
+  padding: 16px;
   color: var(--primaryColor);
+  font-family: 'Roboto', sans-serif;
 }
 
-/* result.component.css */
-.summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 16px;
-  margin: 16px 0;
-}
-
-.card {
-  background: rgba(255,255,255,0.06);
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+.title {
   text-align: center;
-  transition: transform .2s;
-}
-.card:hover {
-  transform: translateY(-4px);
+  font-size: 24px;
+  margin-bottom: 16px;
 }
 
-.chart-section {
-  margin: 20px 0;
+.chart-wrapper {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  margin-bottom: 24px;
 }
-.word-table table {
+
+.chart-title {
+  text-align: left;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.summary-item {
+  flex: 1 1 30%;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-align: center;
+  min-width: 120px;
+}
+
+.summary-item .label {
+  display: block;
+  font-size: 12px;
+  color: var(--textSecondary);
+}
+
+.summary-item .value {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Секція таблиці слів */
+.word-errors-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.word-errors-table {
   width: 100%;
   border-collapse: collapse;
 }
-.word-table th, .word-table td {
+
+.word-errors-table th,
+.word-errors-table td {
   border: 1px solid #555;
-  padding: 8px;
+  padding: 6px;
   text-align: center;
 }
-.restart-button {
+
+.error-row {
+  background: rgba(255, 50, 50, 0.1);
+}
+
+.wrong {
+  color: #f55;
+  font-weight: bold;
+}
+
+/* Секція уроків */
+.lesson-section {
+  margin-bottom: 24px;
+}
+
+.lesson-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.lesson-section li {
+  margin-bottom: 6px;
+}
+
+.lesson-section a {
+  color: var(--primaryColor);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-generate {
+  margin-top: 12px;
+  background-color: transparent;
+  border: 1px solid var(--primaryColor);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.btn-generate:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопка "Зіграти ще раз" */
+.actions {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+}
+
+.btn-retry {
+  background-color: var(--primaryColor);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-retry:hover {
+  background-color: #333;
 }

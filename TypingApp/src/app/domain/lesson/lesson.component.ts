@@ -1,11 +1,12 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { letterView } from '../../letterView';
 import { AuthService } from '../../core/modules/services/auth.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LessonService } from '../../core/modules/services/lesson.service';
 import { Lesson } from '../../core/modules/interfaces/lesson';
 import { ProgressService } from '../../core/modules/services/progress.service';
 import { LessonProgress } from '../../core/modules/interfaces/lesson-progress';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-lesson',
@@ -32,11 +33,14 @@ export class LessonComponent {
   isGameActive: boolean = false;
   elapsedTime: number = 0;
   currentExpectedLetter: string = '';
+  PASS_THRESHOLD = 50;
 
 
   constructor(private authService: AuthService, private route: ActivatedRoute,
     private lessonService: LessonService,
-    private progressService: ProgressService) { }
+    private progressService: ProgressService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -129,12 +133,36 @@ export class LessonComponent {
         bestRaw: raw,
         bestAccuracy: accuracy
       };
-          this.progressService.saveProgress(model)
-      .subscribe(
-        _ => {},
-        err => console.error('Progress save failed', err)
-      );
+      this.progressService.saveProgress(model)
+        .pipe(
+          // після успішного POST, робимо GET поточного прогресу
+          switchMap(() =>
+            this.progressService.getProgressByLessonId(model.userId, model.lessonId)
+          )
+        )
+        .subscribe({
+          next: res => {
+            if (res.success && res.result.progressPercent >= this.PASS_THRESHOLD) {
+              // пройшов – переходимо на наступний урок
+              const nextId = this.lesson!.id + 1;
+              this.router.navigate(['/lesson', nextId]);
+            } else {
+              // не дотягнув – пропонуємо зіграти ще раз
+              alert(
+                `Вам потрібно не менше ${this.PASS_THRESHOLD}% точності, щоб перейти далі. ` +
+                `Ваш результат: ${res.result.progressPercent}%`
+              );
+              this.newGame();
+            }
+          },
+          error: err => {
+            console.error('Progress load failed', err);
+            // навіть якщо GET провалився, даємо перезапустити урок
+            this.newGame();
+          }
+        });
     }
+
 
     const gameElement = document.getElementById('game');
     if (gameElement) {

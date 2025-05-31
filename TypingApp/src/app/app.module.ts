@@ -32,7 +32,6 @@ import { ResultComponent } from './domain/result/result.component';
     LessonListComponent,
     LessonComponent,
     HeaderComponent,
-    ResultComponent
   ],
   imports: [
     BrowserModule,

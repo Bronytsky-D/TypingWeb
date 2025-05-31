@@ -105,23 +105,34 @@
 
   <!-- Records Table -->
   <div class="statistic-wrapp block" *ngIf="reversedRecords.length">
-    <div class="header-info">
-      <div>WPM</div>
-      <div>Raw</div>
-      <div>Accuracy</div>
-      <div>Chars</div>
-      <div>Match Time</div>
-      <div>Date Time</div>
-    </div>
-    <div class="record-info" *ngFor="let record of reversedRecords; trackBy: trackByDateRecord">
-      <div>{{ record.wpm }}</div>
-      <div>{{ record.raw }}</div>
-      <div>{{ record.accuracy }}%</div>
-      <div>{{ record.chars }}</div>
-      <div>{{ record.matchTime }} sec</div>
-      <div>{{ record.dateRecord | date: 'HH:mm dd-MMM' }}</div>
-    </div>
+  <div class="header-info">
+    <div>WPM</div>
+    <div>Raw</div>
+    <div>Accuracy</div>
+    <div>Chars</div>
+    <div>Match Time</div>
+    <div>Date Time</div>
+    <div>Mode</div>
+    <div>Length</div>
+    <div>Language</div>
   </div>
+  <div class="record-info" *ngFor="let record of reversedRecords; trackBy: trackByDateRecord">
+    <div>{{ record.wpm }}</div>
+    <div>{{ record.raw }}</div>
+    <div>{{ record.accuracy }}%</div>
+    <div>{{ record.chars }}</div>
+    <div>{{ record.matchTime }} sec</div>
+    <div>{{ record.dateRecord | date: 'HH:mm dd-MMM' }}</div>
+    <div>{{ record.mode === 0 ? 'Time' : 'Words' }}</div>
+    <div>
+      {{ record.mode === 0 
+         ? (record.gameLength / 1000) + ' sec' 
+         : record.gameLength + ' words' 
+      }}
+    </div>
+    <div>{{ record.language.toUpperCase() }}</div>
+  </div>
+</div>
 
   <!-- Navigation Buttons -->
   <div class="button-container">
