@@ -25,7 +25,6 @@ export class LessonListComponent implements OnInit {
     private progressService: ProgressService,
     public authService: AuthService
   ) {
-    this.currentLanguage = this.authService.getUserDetail().language as 'uk' | 'en';
   }
 
   ngOnInit(): void {

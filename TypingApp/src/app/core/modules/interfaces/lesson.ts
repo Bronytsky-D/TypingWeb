@@ -3,6 +3,5 @@ export interface Lesson {
   title: string;
   description: string;
   keys: string[];
-  content: string;
   language: 'uk' | 'en';
 }

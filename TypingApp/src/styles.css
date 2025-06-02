@@ -7,11 +7,11 @@
   --successColor: #4caf50;
   --borderColor: #444;
   --inputBg: rgba(255, 255, 255, 0.1);
-  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-bg: rgba(255, 255, 255, 0.12);
   --gap: 1rem;
   --radius-sm: 6px;
   --radius-md: 12px;
-  --radius: 12px;
+  --radius:  var(--radius-md);
   --elevation-1: 0 2px 8px rgba(0, 0, 0, 0.2);
   --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.4);
   --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.5);

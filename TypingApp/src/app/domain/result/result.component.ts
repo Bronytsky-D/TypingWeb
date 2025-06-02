@@ -158,7 +158,6 @@ export class ResultComponent implements OnInit {
       description: this.gameStats.language === 'uk'
         ? `Повторіть букви: ${letters}`
         : `Practice letters: ${letters}`,
-      content: this.mistakeLetters.join(' '),
       language: this.gameStats.language as 'uk' | 'en',
     };
   }

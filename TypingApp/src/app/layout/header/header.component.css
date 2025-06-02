@@ -10,8 +10,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-   padding-block: 0.5rem;              /* замість 0.75rem */
-  padding-inline: 1rem;               /* замість 1.5rem */
+  padding: 0.75rem 1.5rem;             
   height: var(--header-height);
 }
 

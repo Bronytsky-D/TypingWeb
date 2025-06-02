@@ -94,17 +94,18 @@
     </table>
   </div>
 
-  <div *ngIf="lessonsForMistakes.length > 0">
-  <h3>Уроки для повторення помилкових літер</h3>
-  <ul>
-    <li *ngFor="let lesson of lessonsForMistakes">
-      {{ lesson.title }}
-      <button (click)="goToLesson(lesson.id)">Перейти</button>
+ <div class="lesson-for-mistakes">
+  <h3 class="section-title">Уроки для повторення помилкових літер</h3>
+  <ul class="styled-lesson-list">
+    <li *ngFor="let lesson of lessonsForMistakes" class="lesson-item">
+      <div class="lesson-header">
+        <strong>{{ lesson.title }}</strong>
+      </div>
+      <div class="lesson-actions">
+        <button (click)="goToLesson(lesson.id)" class="start-button">Перейти</button>
+      </div>
     </li>
   </ul>
-</div>
-<div *ngIf="lessonsForMistakes.length === 0">
-  <p>Уроків для повторення не знайдено.</p>
 </div>
 
   <div class="actions">

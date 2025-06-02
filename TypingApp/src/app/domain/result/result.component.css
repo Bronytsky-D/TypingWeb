@@ -1,144 +1,233 @@
 /* src/app/domain/result/result.component.css */
 
+/* Загальний контейнер */
 .result-container {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 16px;
-  color: var(--primaryColor);
+  padding: 1.5rem;
+  background-color: var(--bgColor);
+  color: var(--textPrimary);
   font-family: 'Roboto', sans-serif;
 }
 
+/* Заголовок */
 .title {
   text-align: center;
-  font-size: 24px;
-  margin-bottom: 16px;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--primaryColor);
 }
 
+/* Обгортка графіків */
 .chart-wrapper {
-  background: rgba(255, 255, 255, 0.04);
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  margin-bottom: 24px;
+  background-color: var(--card-bg);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-1);
+  margin-bottom: 1.5rem;
 }
 
+/* Назва графіка */
 .chart-title {
-  text-align: left;
-  margin-bottom: 8px;
-  font-size: 16px;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--textPrimary);
 }
 
+/* Рядок зі статистикою */
 .summary-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 1rem;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
+/* Картка статистики */
 .summary-item {
   flex: 1 1 30%;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 8px 12px;
-  border-radius: 6px;
+  background-color: var(--card-bg);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-1);
   text-align: center;
   min-width: 120px;
+  transition: box-shadow 0.2s ease;
 }
 
+.summary-item:hover {
+  box-shadow: var(--elevation-2);
+}
+
+/* Підписи та значення */
 .summary-item .label {
   display: block;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--textSecondary);
+  margin-bottom: 0.25rem;
 }
 
 .summary-item .value {
-  font-size: 18px;
+  font-size: 1.25rem;
   font-weight: 500;
+  color: var(--textPrimary);
 }
 
-/* Секція таблиці слів */
+/* Секція таблиці помилок */
 .word-errors-section {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
+/* Заголовок секції */
 .section-title {
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-size: 1.125rem;
+  margin-bottom: 0.75rem;
+  color: var(--primaryColor);
 }
 
+/* Таблиця помилок */
 .word-errors-table {
   width: 100%;
   border-collapse: collapse;
+  background-color: var(--card-bg);
+  box-shadow: var(--elevation-1);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
 }
 
 .word-errors-table th,
 .word-errors-table td {
-  border: 1px solid #555;
-  padding: 6px;
+  border: 1px solid var(--borderColor);
+  padding: 0.5rem;
   text-align: center;
+  font-size: 0.9rem;
+  color: var(--textPrimary);
+}
+
+.word-errors-table th {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--primaryColor);
+  font-weight: 500;
 }
 
 .error-row {
-  background: rgba(255, 50, 50, 0.1);
+  background-color: rgba(229, 57, 53, 0.2);
 }
 
 .wrong {
-  color: #f55;
+  color: var(--errorColor);
   font-weight: bold;
 }
 
-/* Секція уроків */
+/* Секція уроків для помилок */
 .lesson-section {
-  margin-bottom: 24px;
+  margin-bottom: 1.5rem;
 }
 
-.lesson-section ul {
+.styled-lesson-list {
   list-style: none;
-  padding-left: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.lesson-section li {
-  margin-bottom: 6px;
+.styled-lesson-list .lesson-item {
+  background: var(--card-bg);
+  border: 1px solid var(--borderColor);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: box-shadow 0.3s ease;
+  box-shadow: var(--elevation-1);
 }
 
-.lesson-section a {
-  color: var(--primaryColor);
-  text-decoration: underline;
+.styled-lesson-list .lesson-item:hover {
+  box-shadow: var(--elevation-2);
+}
+
+.styled-lesson-list .lesson-header strong {
+  font-size: 1rem;
+  color: var(--textPrimary);
+}
+
+.styled-lesson-list .lesson-actions {
+  margin: 0;
+}
+
+.styled-lesson-list .start-button {
+  background: var(--primaryColor);
+  color: var(--textPrimary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
   cursor: pointer;
+  box-shadow: var(--elevation-1);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-generate {
-  margin-top: 12px;
-  background-color: transparent;
-  border: 1px solid var(--primaryColor);
-  border-radius: 6px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s;
+.styled-lesson-list .start-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primaryColor) 85%, white);
+  box-shadow: var(--elevation-2);
 }
 
-.btn-generate:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+/* Стан, коли уроки відсутні */
+.no-lessons {
+  font-size: 0.9rem;
+  color: var(--textSecondary);
+  text-align: center;
+  padding: 1rem 0;
 }
 
-/* Кнопка "Зіграти ще раз" */
+/* Кнопки дій унизу */
 .actions {
   display: flex;
   justify-content: center;
+  margin-top: 1.5rem;
 }
 
 .btn-retry {
   background-color: var(--primaryColor);
-  color: #fff;
+  color: var(--textPrimary);
   border: none;
-  border-radius: 6px;
-  padding: 10px 20px;
-  font-size: 16px;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  box-shadow: var(--elevation-1);
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.btn-retry:hover {
-  background-color: #333;
+.btn-retry:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--primaryColor) 85%, white);
+  box-shadow: var(--elevation-2);
+}
+
+/* Адаптивність для мобільних екранів */
+@media (max-width: 600px) {
+  .summary-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .summary-item {
+    flex: 1 1 100%;
+  }
+
+  .chart-wrapper {
+    padding: 0.75rem;
+  }
+
+  .lesson-section li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lesson-section .start-button {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
 }

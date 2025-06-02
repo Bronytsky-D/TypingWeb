@@ -1,7 +1,9 @@
-<select [value]="currentLanguage" (change)="onLanguageChange($any($event.target).value)">
-  <option value="uk">Українська</option>
-  <option value="en">English</option>
-</select>
+<div class="language-switcher">
+  <select [value]="currentLanguage" (change)="onLanguageChange($any($event.target).value)">
+    <option value="uk">Українська</option>
+    <option value="en">English</option>
+  </select>
+</div>
 
 <div class="lesson-list">
   <h2>Список уроків</h2>

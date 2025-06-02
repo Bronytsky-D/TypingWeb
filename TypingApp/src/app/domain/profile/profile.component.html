@@ -44,22 +44,7 @@
     </div>
   </div>
 
-  <!-- Filters -->
-  <div class="graph-filters block">
-    <label>Time Range:</label>
-    <select [(ngModel)]="selectedRange" (change)="generateGraphs()">
-      <option value="7">Last 7</option>
-      <option value="30">Last 30</option>
-      <option value="all">All</option>
-    </select>
 
-    <label>Type:</label>
-    <select [(ngModel)]="selectedMetric" (change)="generateGraphs()">
-      <option value="wpm">WPM</option>
-      <option value="accuracy">Accuracy</option>
-      <option value="both">WPM + Accuracy</option>
-    </select>
-  </div>
 
   <!-- Chart -->
   <div class="chart-section block" *ngIf="records.length">
