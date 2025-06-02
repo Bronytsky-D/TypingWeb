@@ -18,7 +18,7 @@ const routes: Routes = [
       { path: 'registration', component: RegistrationComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'lesson-list', component: LessonListComponent},
-      { path: 'lesson/:id', component: LessonComponent},
+      { path: 'lesson/:id/:lang', component: LessonComponent},
       { path: 'result', component: ResultComponent}
     ]
   }

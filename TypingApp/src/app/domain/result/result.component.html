@@ -1,28 +1,28 @@
-<!-- src/app/domain/result/result.component.html -->
 <div class="result-container">
   <h2 class="title">Результати гри</h2>
 
-  <!-- 1) Графік WPM по секундах -->
   <div class="chart-wrapper">
     <h3 class="chart-title">WPM по секундах</h3>
-    <canvas baseChart
-            [data]="wpmChartData"
-            [options]="wpmChartOptions"
-            [type]="'line'">
+    <canvas
+      baseChart
+      [data]="wpmChartData"
+      [options]="wpmChartOptions"
+      [type]="'line'"
+    >
     </canvas>
   </div>
 
-  <!-- 2) Графік помилок по секундах -->
   <div class="chart-wrapper">
     <h3 class="chart-title">Помилки по секундах</h3>
-    <canvas baseChart
-            [data]="mistakeChartData"
-            [options]="mistakeChartOptions"
-            [type]="'bar'">
+    <canvas
+      baseChart
+      [data]="mistakeChartData"
+      [options]="mistakeChartOptions"
+      [type]="'bar'"
+    >
     </canvas>
   </div>
 
-  <!-- Підсумкові метрики -->
   <div class="summary-row">
     <div class="summary-item">
       <span class="label">WPM</span>
@@ -55,9 +55,10 @@
     <div class="summary-item">
       <span class="label">Довжина</span>
       <span class="value">
-        {{ gameStats.mode === 0 
-           ? (gameStats.gameLength / 1000) + ' s' 
-           : gameStats.gameLength + ' words' 
+        {{
+          gameStats.mode === 0
+            ? (gameStats.gameLength / 1000) + ' s'
+            : gameStats.gameLength + ' words'
         }}
       </span>
     </div>
@@ -67,7 +68,6 @@
     </div>
   </div>
 
-  <!-- 3) Таблиця зі словами та кількістю помилок -->
   <div class="word-errors-section" *ngIf="wordStats.length">
     <h3 class="section-title">Статистика по словах</h3>
     <table class="word-errors-table">
@@ -94,24 +94,20 @@
     </table>
   </div>
 
-  <!-- 4) Список «нових» уроків на основі помилок -->
-  <div class="lesson-section" *ngIf="mistakeLetters.length">
-    <h3 class="section-title">Практичні уроки за помилками</h3>
-    <p *ngIf="!lessonsForMistakes.length">Пошук уроків...</p>
-    <ul *ngIf="lessonsForMistakes.length">
-      <li *ngFor="let les of lessonsForMistakes">
-        <a (click)="goToLesson(les.id)">{{ les.title }}</a>
-      </li>
-    </ul>
-    <button class="btn-generate" (click)="startGeneratedLesson()">
-      Згенерувати власний урок
-    </button>
-  </div>
+  <div *ngIf="lessonsForMistakes.length > 0">
+  <h3>Уроки для повторення помилкових літер</h3>
+  <ul>
+    <li *ngFor="let lesson of lessonsForMistakes">
+      {{ lesson.title }}
+      <button (click)="goToLesson(lesson.id)">Перейти</button>
+    </li>
+  </ul>
+</div>
+<div *ngIf="lessonsForMistakes.length === 0">
+  <p>Уроків для повторення не знайдено.</p>
+</div>
 
-  <!-- Кнопка повторної гри -->
   <div class="actions">
-    <button routerLink="/typing-game" class="btn-retry">
-      Зіграти ще раз
-    </button>
+    <button routerLink="/typing-game" class="btn-retry">Зіграти ще раз</button>
   </div>
 </div>

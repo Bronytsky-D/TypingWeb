@@ -29,7 +29,6 @@ import { ResultComponent } from './domain/result/result.component';
     RegistrationComponent,
     LayoutComponent,
     ProfileComponent,
-    LessonListComponent,
     LessonComponent,
     HeaderComponent,
   ],

@@ -44,7 +44,14 @@ export class LessonComponent {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    const lesson = this.lessonService.getLessonById(id);
+    const lang = this.route.snapshot.paramMap.get('lang') as 'uk' | 'en';
+
+    if (!id || (lang !== 'uk' && lang !== 'en')) {
+      console.error('Invalid route parameters');
+      return;
+    }
+
+    const lesson = this.lessonService.getLessonByIdAndLanguage(id,lang);
     if (lesson) {
       this.lesson = lesson;
       this.newGame();

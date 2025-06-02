@@ -2,6 +2,7 @@ export interface Lesson {
   id: number;
   title: string;
   description: string;
-  keys: string[]; 
+  keys: string[];
   content: string;
+  language: 'uk' | 'en';
 }
