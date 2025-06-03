@@ -15,6 +15,10 @@ import { SocialLoginModule, SocialAuthServiceConfig } from '@abacritt/angularx-s
 import { GoogleLoginProvider } from '@abacritt/angularx-social-login';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './core/modules/services/auth.interceptor';
+import { LessonListComponent } from './domain/lesson-list/lesson-list.component';
+import { LessonComponent } from './domain/lesson/lesson.component';
+import { HeaderComponent } from './layout/header/header.component';
+import { ResultComponent } from './domain/result/result.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +28,9 @@ import { AuthInterceptor } from './core/modules/services/auth.interceptor';
     LoginComponent,
     RegistrationComponent,
     LayoutComponent,
-    ProfileComponent
+    ProfileComponent,
+    LessonComponent,
+    HeaderComponent,
   ],
   imports: [
     BrowserModule,
