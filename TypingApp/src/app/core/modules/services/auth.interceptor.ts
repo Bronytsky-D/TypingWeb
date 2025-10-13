@@ -8,40 +8,33 @@ import {
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
 import { catchError, Observable, switchMap, throwError } from 'rxjs';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private authService: AuthService) {}
+  constructor(private auth: AuthService, private tokenService: TokenService) {}
 
- intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> { 
-    const token = this.authService.accessToken;
-
-    let authReq = req;
-    if (token) {
-      authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    }
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const token = this.tokenService.accessToken;
+    const authReq = token
+      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : req;
 
     return next.handle(authReq).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 401) {
-          return this.authService.refreshToken().pipe(
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          return this.auth.refreshToken().pipe(
             switchMap(() => {
-              const newToken = this.authService.accessToken;
-              const retryReq = req.clone({
-                setHeaders: {
-                  Authorization: `Bearer ${newToken}`
-                }
+              const newToken = this.tokenService.accessToken;
+              const retry = req.clone({
+                setHeaders: { Authorization: `Bearer ${newToken}` }
               });
-              return next.handle(retryReq);
+              return next.handle(retry);
             })
           );
         }
 
-        return throwError(() => error);
+        return throwError(() => err);
       })
     );
   }

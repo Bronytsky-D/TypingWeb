@@ -14,7 +14,7 @@ export class RecordService {
   constructor(private http:HttpClient) { }
 
   write(data: RecordRequset): Observable<ExecutionResponse<RecordResponse[]>>{
-    return this.http.post<ExecutionResponse<RecordResponse[]>>(`${this.apiUrl}Record/write`, data).pipe(
+    return this.http.post<ExecutionResponse<RecordResponse[]>>(`${this.apiUrl}Record`, data).pipe(
       map((response) => {
         if (response.success) {
           response.message = "Success";
@@ -24,7 +24,7 @@ export class RecordService {
     );
   }
   read(userId: string): Observable<ExecutionResponse<RecordResponse[]>> {
-    return this.http.get<ExecutionResponse<RecordResponse[]>>(`${this.apiUrl}Record/read/${userId}`).pipe(
+    return this.http.get<ExecutionResponse<RecordResponse[]>>(`${this.apiUrl}Record/${userId}`).pipe(
       map((response: ExecutionResponse<RecordResponse[]>) => {
         if (response.success) {
           response.message = "Success";

@@ -46,7 +46,6 @@
 
 
 
-  <!-- Chart -->
   <div class="chart-section block" *ngIf="records.length">
     <h3>Typing Progress</h3>
     <canvas baseChart [data]="lineChartData"
@@ -55,7 +54,6 @@
     </canvas>
   </div>
 
-  <!-- Statistics -->
   <div class="profile-stats block" *ngIf="records.length">
     <div class="stat-column">
       <div class="label">Tests Started</div>
@@ -66,8 +64,6 @@
       <div class="value">{{ averageRawWpm }}</div>
       <div class="label">Highest Accuracy</div>
       <div class="value">{{ highestAccuracy }}%</div>
-      <div class="label">Highest Consistency</div>
-      <div class="value">{{ highestConsistency }}%</div>
     </div>
     <div class="stat-column">
       <div class="label">Tests Completed</div>
@@ -77,8 +73,6 @@
       <div class="value">{{ averageRawWpm }}</div>
       <div class="label">Avg Accuracy</div>
       <div class="value">{{ averageRawAccuracy }}%</div>
-      <div class="label">Avg Consistency</div>
-      <div class="value">{{ averageRawConsistency }}%</div>
     </div>
     <div class="stat-column">
       <div class="label">Estimated Words Typed</div>

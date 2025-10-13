@@ -1,15 +1,12 @@
-// src/app/domain/result/result.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
-import { ChartConfiguration } from 'chart.js';
 
 import { GameResultService } from '../../core/modules/services/game-result.service';
 import { LessonService } from '../../core/modules/services/lesson.service';
 import { Lesson } from '../../core/modules/interfaces/lesson';
-import { WordStat } from '../../core/modules/interfaces/word.stat';
-import { UKR_TO_LAT } from '../../core/utils/ukr-to-lat-keymap';
+import { letterView } from '../../letterView';
 
 @Component({
   selector: 'app-result',
@@ -19,47 +16,25 @@ import { UKR_TO_LAT } from '../../core/utils/ukr-to-lat-keymap';
   styleUrls: ['./result.component.css'],
 })
 export class ResultComponent implements OnInit {
-  gameStats!: {
-    wpm: number;
-    raw: number;
-    accuracy: number;
-    mistakes: number;
-    matchTime: number;
-    xp: number;
-    mode: number;
-    gameLength: number;
-    language: string;
-  };
-  wpmTimeline: { second: number; wpm: number }[] = [];
-  mistakeTimeline: { second: number; mistakes: number }[] = [];
-  wordStats: WordStat[] = [];
 
-  mistakeLetters: string[] = [];
-  lessonsForMistakes: Lesson[] = [];
-  generatedLesson!: Lesson;
+  resultLetterConteiner: letterView[] = [];
 
-  wpmChartData!: ChartConfiguration<'line'>['data'];
-  wpmChartOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { title: { display: true, text: 'Секунди' } },
-      y: { title: { display: true, text: 'WPM' }, beginAtZero: true },
-    },
-  };
+  mistakesLetterContiener: letterView[] = [];
+  timeOfGame: number = 0; 
+  language: string = '';
 
-  mistakeChartData!: ChartConfiguration<'bar'>['data'];
-  mistakeChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: true,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { title: { display: true, text: 'Секунди' } },
-      y: {
-        title: { display: true, text: 'Кількість помилок' },
-        beginAtZero: true,
-      },
-    },
-  };
+  lenghtOfOwrds: number = 0;
+  numberOfWords: number = 0;
+  wpm: number = 0;
+  accuracy: number = 0;
+  XP: number = 0;
+  mode: string = "";
+  lengthOfGame: number = 0;
+
+  listLessons: Lesson[] = [];
+  words: letterView[][] = [];
+  index: number = 0;
+  hoveredIndex: number | null = null;
 
   constructor(
     private gameResult: GameResultService,
@@ -69,106 +44,65 @@ export class ResultComponent implements OnInit {
 
   ngOnInit(): void {
     const res = this.gameResult.getResults();
-    this.gameStats = res.gameStats;
-    this.wpmTimeline = res.wpmTimeline || [];
-    this.mistakeTimeline = res.mistakeTimeline || [];
-    this.wordStats = res.wordStats || [];
+    console.log(res.letterConteiner)
+    this.timeOfGame = res.timeOfGame;
+    this.resultLetterConteiner = res.letterConteiner;
+    this.mistakesLetterContiener = this.resultLetterConteiner.filter( (letter) => letter.isMistake);
 
-    this.buildWpmChart();
-    this.buildMistakeChart();
-    this.extractMistakeLetters();
-    this.matchLessons();
-    this.buildGeneratedLesson();
+    this.groupLettersByWords()
+
+    this.numberOfWords = this.resultLetterConteiner.filter( letter => letter.letter === " ").length
+    this.lenghtOfOwrds = this.resultLetterConteiner.length
+    
+    this.wpm = Math.floor((this.lenghtOfOwrds / 5) / (this.timeOfGame / 60000));
+    this.accuracy = Math.floor(((this.lenghtOfOwrds - this.mistakesLetterContiener.length) / this.lenghtOfOwrds) * 100);
+    let multiplier = 1.0;
+
+    if (this.timeOfGame >= 60000 || this.numberOfWords >= 50) multiplier = 1.2;
+    if (this.numberOfWords >= 125 || this.timeOfGame >= 90000) multiplier = 1.5;
+    this.XP =  Math.round((this.wpm * this.accuracy * multiplier) / 100);
+
+    this.mode = res.mode;
+    this.lengthOfGame = res.length;
+    this.language = res.language;
+    this.getLessonbymistikeLetter();
+  }
+  
+  getStyles(letter: letterView) {
+    return letter.isCorrect ? 'letter correct' : 'letter incorrect';
   }
 
-  private buildWpmChart() {
-    const labels = this.wpmTimeline.map((p) => p.second.toString());
-    const data = this.wpmTimeline.map((p) => Math.round(p.wpm));
-    this.wpmChartData = {
-      labels,
-      datasets: [
-        {
-          data,
-          label: 'WPM по секундах',
-          borderColor: '#42A5F5',
-          backgroundColor: 'rgba(66,165,245,0.3)',
-          fill: false,
-          tension: 0.3,
-        },
-      ],
-    };
-  }
-
-  private buildMistakeChart() {
-    const labels = this.mistakeTimeline.map((p) => p.second.toString());
-    const data = this.mistakeTimeline.map((p) => p.mistakes);
-    this.mistakeChartData = {
-      labels,
-      datasets: [
-        {
-          data,
-          label: 'Помилки по секундах',
-          backgroundColor: 'rgba(245,50,50,0.6)',
-        },
-      ],
-    };
-  }
-
-  getChars(w: WordStat): string[] {
-    return w.typed.split('');
-  }
-
-  private extractMistakeLetters(): void {
-    const rawMistakes = this.wordStats
-      .filter(w => w.mistakes > 0)
-      .flatMap(w =>
-        w.word
-          .split('')
-          .map((correctChar, i) => ({
-            correctChar: correctChar.toLowerCase(),
-            typedChar: (w.typed[i] || '').toLowerCase()
-          }))
-          .filter(pair => pair.correctChar !== pair.typedChar)
-          .map(pair => pair.correctChar)
-      );
-
-    if (this.gameStats.language === 'uk') {
-      this.mistakeLetters = Array.from(new Set(rawMistakes));
-    } else {
-      this.mistakeLetters = Array.from(new Set(rawMistakes));
+  groupLettersByWords(): void{
+    this.words = [];
+    let current: letterView[] = [];
+    for(const letter of this.resultLetterConteiner){
+      current.push(letter)
+      if (letter.letter === " "){
+        this.words[this.index] = current;
+        current = [];
+        this.index++
+      }
     }
-  }
 
-  private matchLessons(): void {
-    this.lessonService.getLessonsByLanguage(this.gameStats.language as 'uk' | 'en').subscribe(all => {
-      this.lessonsForMistakes = all.filter(lesson =>
-        lesson.keys.some(k => this.mistakeLetters.includes(k.toLowerCase()))
-      );
-    });
-  }
+    if (current.length > 0) {
+      this.words.push(current);
+    }
+    this.index = 0;
+  } 
 
-  private buildGeneratedLesson(): void {
-    const letters = this.mistakeLetters.join(', ');
-    this.generatedLesson = {
-      id: 0,
-      keys: this.mistakeLetters,
-      title: this.gameStats.language === 'uk'
-        ? `Практика помилкових букв: ${letters}`
-        : `Practice mistake letters: ${letters}`,
-      description: this.gameStats.language === 'uk'
-        ? `Повторіть букви: ${letters}`
-        : `Practice letters: ${letters}`,
-      language: this.gameStats.language as 'uk' | 'en',
-    };
-  }
-
-  startGeneratedLesson(): void {
-    this.router.navigate(['/lesson', 'practice', this.gameStats.language], {
-      state: { lesson: this.generatedLesson },
-    });
+  getLessonbymistikeLetter(){
+    let lessons = this.lessonService.getLessonsByLanguage(this.language)
+    this.mistakesLetterContiener.forEach( mistake => { 
+      lessons.forEach(lesson => {
+        if (lesson.keys.includes(mistake.letter)){
+          this.listLessons.push(lesson)
+        }
+      })
+    })
+    this.listLessons =  this.listLessons.filter( (val, index, arr) => arr.indexOf(val) === index);
   }
 
   goToLesson(id: number): void {
-    this.router.navigate(['/lesson', id, this.gameStats.language]);
+    this.router.navigate(['/lesson', id, this.language]);
   }
 }

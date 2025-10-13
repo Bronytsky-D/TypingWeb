@@ -1,4 +1,3 @@
-// src/app/domain/lesson-list/lesson-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Lesson } from '../../core/modules/interfaces/lesson';
 import { LessonService } from '../../core/modules/services/lesson.service';
@@ -8,6 +7,7 @@ import { LessonProgressResponse } from '../../core/modules/interfaces/lesson-pro
 import { LessonWithState } from './interfaces/lesson-state';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { UserManagerService } from '../../core/modules/services/user-manager.service ';
 
 @Component({
   selector: 'app-lesson-list',
@@ -23,80 +23,64 @@ export class LessonListComponent implements OnInit {
   constructor(
     private lessonService: LessonService,
     private progressService: ProgressService,
-    public authService: AuthService
+    public authService: AuthService,
+    public userManagerService: UserManagerService
   ) {
   }
 
   ngOnInit(): void {
-    const userId = this.authService.getUserDetail().id;
+    const userId = this.userManagerService.getUser()!.id;
 
     this.loadLessons();
   }
+  
   loadLessons(): void {
-    const userId = this.authService.getUserDetail().id;
-
-    this.lessonService.getLessonsByLanguage(this.currentLanguage).subscribe(lessons => {
-      this.progressService.getProgress(userId).subscribe({
-        next: (progress) => {
-          this.processLessonsWithProgress(lessons, progress);
-        },
-        error: () => {
-          this.processLessonsWithProgress(lessons, {
-            success: true,
-            result: [],
-          });
-        },
-      });
-    });
-  }
-
-  private processLessonsWithProgress(
-    lessons: Lesson[],
-    progress: any
-  ): void {
-    const progressArray = progress.success ? progress.result : [];
-    const progMap = new Map<number, LessonProgressResponse>();
-    progressArray.forEach((p: LessonProgressResponse) =>
-      progMap.set(p.lessonId, p)
-    );
-
-    const sorted = lessons.slice().sort((a, b) => a.id - b.id);
-
-    const lessonsWithState = sorted.map((lesson, idx) => {
-      const progressData = progMap.get(lesson.id);
-      const isCompleted = progressData
-        ? progressData.progressPercent >= 80
-        : false;
-
-      let isUnlocked = false;
-      if (idx === 0) {
-        isUnlocked = true;
-      } else {
-        const prevLesson = sorted[idx - 1];
-        const prevProgress = progMap.get(prevLesson.id);
-        isUnlocked = prevProgress
-          ? prevProgress.progressPercent >= 80
-          : false;
+    const userId = this.userManagerService.getUser()!.id;
+    this.progressService.getProgress(userId).subscribe({
+      next: (value)=>{
+        let lessonsState = this.lessonService.getLessonsByLanguage(this.currentLanguage)
+        this.procecingLesson(value.result, lessonsState);
+      },
+      error: (err) => {
+        console.log(err)
       }
 
-      return {
-        ...lesson,
-        isCompleted,
-        isUnlocked,
-        progressData: progressData || null,
-      } as LessonWithState;
     });
 
-    this.lessons = lessonsWithState;
   }
+
+  procecingLesson(lessonsProgres:LessonProgressResponse[], lessons: Lesson[]){
+    let start = 1;
+    this.lessons = [];
+    if ( this.currentLanguage === 'uk'){
+      start = 2;
+    }
+     let lastComplited = start;
+    for(let i = start; i <= lessons.length; i += 2){
+      let leson = lessons.find( lesson => lesson.id ===i )!; 
+      if ( lessonsProgres.some( lesson =>  lesson.lessonId === i )){
+        let con: LessonWithState = { ...leson,isCompleted: true, isUnlocked: true }
+        this.lessons.push(con);
+        lastComplited = lastComplited + 2;
+      }else if(lastComplited === i || i === start){
+        let con: LessonWithState = { ...leson,isCompleted: false, isUnlocked: true } 
+        this.lessons.push(con);
+      }else{
+        let con: LessonWithState = { ...leson,isCompleted: false, isUnlocked: false } 
+        this.lessons.push(con);
+      }
+    }
+  }
+
   selectLanguage(lang: 'uk' | 'en'): void {
     this.currentLanguage = lang;
     this.loadLessons();
   }
-onLanguageChange(lang: 'uk' | 'en') {
-  if (this.currentLanguage !== lang) {
-    this.currentLanguage = lang;
-    this.loadLessons();
+
+  onLanguageChange(lang: 'uk' | 'en') {
+    if (this.currentLanguage !== lang) {
+      this.currentLanguage = lang;
+      this.loadLessons();
+    }
   }
-}
 }

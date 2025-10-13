@@ -7,6 +7,10 @@ import { Lesson } from '../../core/modules/interfaces/lesson';
 import { ProgressService } from '../../core/modules/services/progress.service';
 import { LessonProgress } from '../../core/modules/interfaces/lesson-progress';
 import { switchMap } from 'rxjs';
+import { FingerType, Key, KeyboardLayout } from './interfaces/key';
+import { UKRAINIAN_KEYBOARD } from './utils/ukrainian.keyboard';
+import { ENGLISH_KEYBOARD } from './utils/english.keyboard';
+import { UserManagerService } from '../../core/modules/services/user-manager.service ';
 
 @Component({
   selector: 'app-lesson',
@@ -34,9 +38,11 @@ export class LessonComponent {
   elapsedTime: number = 0;
   currentExpectedLetter: string = '';
   PASS_THRESHOLD = 50;
+  keyboardLayout: KeyboardLayout = [];
+  description: string = '';
+  isGameEnded: boolean = false;
 
-
-  constructor(private authService: AuthService, private route: ActivatedRoute,
+  constructor(private userManagerService: UserManagerService, private route: ActivatedRoute,
     private lessonService: LessonService,
     private progressService: ProgressService,
     private router: Router
@@ -51,7 +57,10 @@ export class LessonComponent {
       return;
     }
 
-    const lesson = this.lessonService.getLessonByIdAndLanguage(id,lang);
+    this.keyboardLayout = lang === 'uk' ? UKRAINIAN_KEYBOARD : ENGLISH_KEYBOARD;
+
+    const lesson = this.lessonService.getLessonByIdAndLanguage(id, lang);
+    this.description = lesson!.description
     if (lesson) {
       this.lesson = lesson;
       this.newGame();
@@ -65,12 +74,12 @@ export class LessonComponent {
     let index = 0;
 
     for (let i = 0; i < groupCount; i++) {
-      const groupLength = Math.floor(Math.random() * 3) + 2; // 2–4 символи в групі
+      const groupLength = Math.floor(Math.random() * 3) + 2;
       for (let j = 0; j < groupLength; j++) {
         const char = keys[Math.floor(Math.random() * keys.length)];
         result.push(new letterView(index++, char));
       }
-      result.push(new letterView(index++, ' ')); // пробіл між групами
+      result.push(new letterView(index++, ' '));
     }
 
     return result;
@@ -91,7 +100,7 @@ export class LessonComponent {
 
     this.lessonElement.nativeElement.blur();
 
-    const letters = this.generateLessonText(this.lesson!.keys, 10); // 60 груп = 60 слів
+    const letters = this.generateLessonText(this.lesson!.keys, 50);
     console.log('Lesson keys:', this.lesson?.keys);
     console.log('Generated letters:', letters);
     this.lettersContainer = letters;
@@ -119,7 +128,7 @@ export class LessonComponent {
     this.minutes = Math.floor(time / 60000);
     this.seconds = Math.floor((time % 60000) / 1000);
   }
-  gameOver(): void {
+  gameOver(resultLetterConteiner: letterView[]): void {
     clearInterval(this.timer);
     this.isGameActive = false;
     this.timer = null;
@@ -132,9 +141,9 @@ export class LessonComponent {
     const consistency = 100;
 
     console.log(`Game Over! Time: ${elapsedSeconds} seconds, Mistakes: ${this.numberOfMistake.length}, WPM: ${wpm}, raw${raw} ,accuracy ${accuracy} ,consistency ${consistency}`);
-    if (this.authService.getUserDetail() !== null && this.currentPosition >= 5) {
+    if (this.userManagerService.getUser() !== null && this.currentPosition >= 5) {
       const model: LessonProgress = {
-        userId: this.authService.getUserDetail().id,
+        userId: this.userManagerService.getUser()!.id,
         lessonId: this.lesson!.id,
         bestWpm: wpm,
         bestRaw: raw,
@@ -142,7 +151,6 @@ export class LessonComponent {
       };
       this.progressService.saveProgress(model)
         .pipe(
-          // після успішного POST, робимо GET поточного прогресу
           switchMap(() =>
             this.progressService.getProgressByLessonId(model.userId, model.lessonId)
           )
@@ -150,11 +158,9 @@ export class LessonComponent {
         .subscribe({
           next: res => {
             if (res.success && res.result.progressPercent >= this.PASS_THRESHOLD) {
-              // пройшов – переходимо на наступний урок
               const nextId = this.lesson!.id + 1;
               this.router.navigate(['/lesson', nextId]);
             } else {
-              // не дотягнув – пропонуємо зіграти ще раз
               alert(
                 `Вам потрібно не менше ${this.PASS_THRESHOLD}% точності, щоб перейти далі. ` +
                 `Ваш результат: ${res.result.progressPercent}%`
@@ -164,7 +170,6 @@ export class LessonComponent {
           },
           error: err => {
             console.error('Progress load failed', err);
-            // навіть якщо GET провалився, даємо перезапустити урок
             this.newGame();
           }
         });
@@ -178,89 +183,19 @@ export class LessonComponent {
     this.newGame();
   }
 
+  switchTimer(_isGameactive: boolean): void {
+    if (_isGameactive === true) {
+      this.focusGame();
+    } else if (_isGameactive === false) {
+      this.pauseTimer();
+    }
+  }
   pauseTimer(): void {
     if (this.isGameActive) {
       this.isGameActive = false;
       clearInterval(this.interval);
       this.pauseTime += Date.now() - this.gameStart;
     }
-  }
-
-
-  startWordsModeTimer(): void {
-    this.interval = setInterval(() => {
-      const elapsedTime = Date.now() - this.gameStart - this.pauseTime;
-    }, 1000);
-  }
-
-  isCurrent(index: number): boolean {
-    return this.currentPosition === index;
-  }
-
-  isCorrektLetter(char: string): boolean {
-    if (this.isCurrent(this.lettersContainer[this.currentPosition].index)) {
-      if (this.lettersContainer[this.currentPosition].letter === char) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  increasePocition(key: string) {
-    console.log(key, this.currentPosition, this.lastIndex);
-    if (this.isCorrektLetter(key)) {
-      this.lettersContainer[this.currentPosition].isCorrect = true;
-      this.currentPosition++;
-    } else {
-      if (!this.numberOfMistake.includes(this.currentPosition)) {
-        this.numberOfMistake.push(this.currentPosition);
-      }
-      this.lettersContainer[this.currentPosition].isMistake = true;
-      this.currentPosition++;
-    }
-    this.updateCursorPosition();
-    this.highlightExpectedKey(this.lettersContainer[this.currentPosition]?.letter);
-    if (this.isLastLetter()) this.gameOver();
-  }
-
-  decreasePocition(): void {
-    if (this.currentPosition > 0) {
-      this.currentPosition--;
-      this.lettersContainer[this.currentPosition].isCorrect = false;
-      this.lettersContainer[this.currentPosition].isMistake = false;
-
-      // Remove this position from numberOfMistake if it exists
-      const mistakeIndex = this.numberOfMistake.indexOf(this.currentPosition);
-      if (mistakeIndex > -1) {
-        this.numberOfMistake.splice(mistakeIndex, 1);
-      }
-
-      this.updateCursorPosition();
-      this.highlightExpectedKey(this.lettersContainer[this.currentPosition]?.letter);
-
-    }
-
-  }
-
-  spacePosition(): void {
-    if (this.isCorrektLetter(' ')) {
-      this.lettersContainer[this.currentPosition].isCorrect = true;
-      this.wordsCounter++;
-      this.currentPosition++
-    } else {
-      if (!this.numberOfMistake.includes(this.currentPosition)) {
-        this.numberOfMistake.push(this.currentPosition);
-      }
-      this.lettersContainer[this.currentPosition].isMistake = true
-      this.currentPosition++;
-    }
-    this.updateCursorPosition();
-    this.highlightExpectedKey(this.lettersContainer[this.currentPosition]?.letter);
-  }
-
-  getStyles(letter: letterView) {
-    return this.isCurrent(letter.index) ? 'letter current' : letter.isCorrect ? 'letter correct' : letter.isMistake ?
-      'letter incorrect' : 'letter';
   }
 
   focusGame() {
@@ -298,21 +233,105 @@ export class LessonComponent {
     return this.currentPosition === this.lastIndex;
   }
 
-  isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-  highlightExpectedKey(letter: string) {
-    const prev = document.querySelector('.key.expected');
-    if (prev) prev.classList.remove('expected');
 
-    let keyId = letter.toLowerCase();
-    if (letter === ' ') {
-      keyId = 'space';
+  // highlightExpectedKey(letter: string) {
+  //   const prev = document.querySelector('.key.expected');
+  //   if (prev) prev.classList.remove('expected');
+
+  //   let keyId = letter.toLowerCase();
+  //   if (letter === ' ') {
+  //     keyId = 'space';
+  //   }
+
+  //   const keyElement = document.getElementById(keyId);
+  //   if (keyElement) keyElement.classList.add('expected');
+  // }
+  // getFingerClass(key: Key): string {
+  //   return `finger-${key.finger}`;
+  // }
+  // getFingerName(finger: FingerType): string {
+  //   const fingerNames = {
+  //     [FingerType.LEFT_PINKY]: 'Лівий мізинець',
+  //     [FingerType.LEFT_RING]: 'Лівий безіменний',
+  //     [FingerType.LEFT_MIDDLE]: 'Лівий середній',
+  //     [FingerType.LEFT_INDEX]: 'Лівий вказівний',
+  //     [FingerType.LEFT_THUMB]: 'Лівий великий',
+  //     [FingerType.RIGHT_THUMB]: 'Правий великий',
+  //     [FingerType.RIGHT_INDEX]: 'Правий вказівний',
+  //     [FingerType.RIGHT_MIDDLE]: 'Правий середній',
+  //     [FingerType.RIGHT_RING]: 'Правий безіменний',
+  //     [FingerType.RIGHT_PINKY]: 'Правий мізинець'
+  //   };
+  //   return fingerNames[finger] || 'Невідомий палець';
+  // }
+
+  // getCurrentFingerAdvice(): string {
+  //   if (this.currentPosition < this.lettersContainer.length) {
+  //     const expectedLetter = this.lettersContainer[this.currentPosition].letter;
+  //     const expectedKey = this.findKeyByLetter(expectedLetter);
+
+  //     if (expectedKey) {
+  //       return `Використовуйте ${this.getFingerName(expectedKey.finger)} для клавіші "${expectedKey.display}"`;
+  //     }
+  //   }
+  //   return '';
+  // }
+
+  // private findKeyByLetter(letter: string): Key | null {
+  //   for (const row of this.keyboardLayout) {
+  //     for (const key of row) {
+  //       if (letter === ' ' && key.id === 'space') {
+  //         return key;
+  //       }
+  //       if (key.id.toLowerCase() === letter.toLowerCase()) {
+  //         return key;
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  // getFingerStats(): { [key: string]: number } {
+  //   const stats: { [key: string]: number } = {};
+
+  //   for (let i = 0; i < this.currentPosition; i++) {
+  //     const letter = this.lettersContainer[i].letter;
+  //     const key = this.findKeyByLetter(letter);
+
+  //     if (key) {
+  //       const fingerName = this.getFingerName(key.finger);
+  //       stats[fingerName] = (stats[fingerName] || 0) + 1;
+  //     }
+  //   }
+
+  //   return stats;
+  // }
+  getKeyClasses(key: Key): string[] {
+    const classes = ['key'];
+
+    classes.push(`finger-${key.finger}`);
+
+    if (key.id === 'space') {
+      classes.push('space');
     }
 
-    const keyElement = document.getElementById(keyId);
-    if (keyElement) keyElement.classList.add('expected');
+    if (this.isExpectedKey(key)) {
+      classes.push('expected');
+    }
+
+    return classes;
   }
 
+  isExpectedKey(key: Key): boolean {
+    if (this.currentPosition < this.lettersContainer.length) {
+      const expectedLetter = this.lettersContainer[this.currentPosition].letter;
 
+      if (expectedLetter === ' ') {
+        return key.id === 'space';
+      }
+
+      return key.id.toLowerCase() === expectedLetter.toLowerCase();
+    }
+    return false;
+  }
 }

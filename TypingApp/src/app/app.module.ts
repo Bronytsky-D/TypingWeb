@@ -19,6 +19,7 @@ import { LessonListComponent } from './domain/lesson-list/lesson-list.component'
 import { LessonComponent } from './domain/lesson/lesson.component';
 import { HeaderComponent } from './layout/header/header.component';
 import { ResultComponent } from './domain/result/result.component';
+import { TypingCoreComponent } from './domain/typing-core/typing-core.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { ResultComponent } from './domain/result/result.component';
     ProfileComponent,
     LessonComponent,
     HeaderComponent,
+    TypingCoreComponent,
   ],
   imports: [
     BrowserModule,

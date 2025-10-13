@@ -1,7 +1,6 @@
-<!-- header.component.html -->
 <header class="header">
   <nav class="nav-links" aria-label="Основна навігація">
-    <a routerLink="/lesson-list" routerLinkActive="active">Уроки</a>
+    <a *ngIf="authService.isLoggedIn()" routerLink="/lesson-list" routerLinkActive="active">Уроки</a>
     <a routerLink="/typing-game" routerLinkActive="active">Гра</a>
     <a *ngIf="authService.isLoggedIn()" routerLink="/profile" routerLinkActive="active">Профіль</a>
   </nav>

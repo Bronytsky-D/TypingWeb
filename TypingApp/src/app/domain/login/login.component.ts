@@ -52,7 +52,7 @@ export class LoginComponent implements OnInit{
   login(): void {
     this.authService.login({ email: this.email, password: this.password }).subscribe(
       (response) => {
-        if (response.isSuccess) {
+        if (response.success) {
           this.router.navigate(['/typing-game']);
         } else {
           alert('Login failed: ' + response.message);

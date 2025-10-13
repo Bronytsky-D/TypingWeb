@@ -222,3 +222,55 @@ div#lesson,
     height: auto;
   }
 }
+.lesson-description {
+  font-family: 'Roboto', sans-serif;
+  color: var(--textSecondary);
+  background-color: #fff;
+  border-left: 4px solid var(--primaryColor);
+  padding: 1rem;
+  margin: 1rem auto;
+  max-width: 800px;
+  border-radius: 4px;
+  line-height: 1.6;
+  font-size: 1rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.finger-left-pinky {
+  background-color: rgba(255, 153, 153, 0.2); 
+}
+.finger-left-ring {
+  background-color: rgba(255, 204, 153, 0.2); 
+}
+.finger-left-middle {
+  background-color: rgba(255, 255, 153, 0.2); 
+}
+.finger-left-index {
+  background-color: rgba(204, 255, 153, 0.2); 
+}
+.finger-left-thumb {
+  background-color: rgba(153, 255, 204, 0.2); 
+}
+.finger-right-thumb {
+  background-color: rgba(153, 204, 255, 0.2); 
+}
+.finger-right-index {
+  background-color: rgba(204, 153, 255, 0.2); 
+}
+.finger-right-middle {
+  background-color: rgba(255, 153, 255, 0.2); 
+}
+.finger-right-ring {
+  background-color: rgba(255, 102, 178, 0.2); 
+}
+.finger-right-pinky {
+  background-color: rgba(178, 102, 255, 0.2); 
+}
+
+
+.key.expected {
+  border: 2px solid var(--primaryColor); 
+  box-shadow: 0 0 10px var(--primaryColor);
+ 
+}

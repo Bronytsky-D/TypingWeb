@@ -1,0 +1,11 @@
+<div id="game" tabindex="0" (click)="this.focusGame()" (blur)="pauseTimer()" appKeyup
+  (actionAllowKey)="this.increasePocition($event)" (actionBackspace)="this.decreasePocition()"
+  (actionSpace)="this.spacePosition()" #game>
+  <div id="words" class="words-container">
+    <div class="word">
+      <span *ngFor="let letter of lettersContainer" [ngClass]="getStyles(letter)">{{ letter.letter }}</span>
+    </div>
+  </div>
+  <div id="cursor" #cursor></div>
+  <div id="focus-error">Натисніть тут, щоб сфокусуватися</div>
+</div>

@@ -2,19 +2,15 @@
   <div class="menu-config">
     <div class="mode">
       <div class="text-button button-conteiner" (click)="selectMode('time')" [class.active]="selectedMode === 'time'">
-        <span class="material-symbols-outlined">
-          schedule
-        </span>
+
         <span>
-          timer
+          таймер
         </span>
       </div>
       <div class="text-button button-conteiner" (click)="selectMode('words')" [class.active]="selectedMode === 'words'">
-        <span class="material-symbols-outlined">
-          abc
-        </span>
+   
         <span>
-          words
+          кіл. слів
         </span>
       </div>
     </div>
@@ -62,18 +58,8 @@
 <div *ngIf="selectedMode === 'time'" class="counter timer">{{ minutes }}:{{ seconds }}</div>
 <div *ngIf="selectedMode === 'words'" class="counter words-counter">{{wordsCounter}}/{{numberOfWords}}</div>
 
+<app-typing-core [lettersContainer]="this.lettersContainer" [timerEnd]="this.isGameEnded" (toggle)="switchTimer($event)" (endGame)="gameOver($event)">
 
-<div id="game" tabindex="0" (click)="this.focusGame()" (blur)="pauseTimer()" appKeyup
-  (actionAllowKey)="this.increasePocition($event)" (actionBackspace)="this.decreasePocition()"
-  (actionSpace)="this.spacePosition()" #game>
-  <div id="words" class="words-container">
-    <div class="word">
-      <span *ngFor="let letter of lettersContainer" [ngClass]="getStyles(letter)">{{ letter.letter }}</span>
-    </div>
-  </div>
-  <div id="cursor" #cursor></div>
-  <div id="focus-error">Click here to focus</div>
-</div>
 <div class="restart">
   <span class="material-symbols-outlined" (click)="newGame()">
     replay

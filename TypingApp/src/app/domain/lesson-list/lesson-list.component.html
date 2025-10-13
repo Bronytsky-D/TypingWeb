@@ -22,8 +22,6 @@
 
       <p class="lesson-description">{{ lesson.description }}</p>
 
-
-
       <div class="lesson-actions">
         <button [routerLink]="lesson.isUnlocked ? ['/lesson', lesson.id, currentLanguage] : null"
           [disabled]="!lesson.isUnlocked" class="start-button" [class.disabled]="!lesson.isUnlocked">

@@ -1,39 +1,42 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment.development';
+import { enviromentAuth } from '../../../../environments/enviromentAuth';
 import { LoginRequest } from '../interfaces/login-request';
 import { RegistrationRequest } from '../interfaces/registration-request';
 import { AuthResponse } from '../interfaces/auth-response';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { jwtDecode } from 'jwt-decode';
+import { ExecutionResponse } from '../interfaces/execution-response'
+import { UserManagerService } from './user-manager.service ';
+import { TokenService } from './token.service';
+import { JwtUtilService } from './jwt-util.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  apiUrl: string = environment.apiUrl;
-  private tokenSubject = new BehaviorSubject<string | null>(null);
-  token$ = this.tokenSubject.asObservable();
+  private readonly apiUrl = enviromentAuth.apiUrlAuth;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private tokenService: TokenService,
+    private userManager: UserManagerService,
+    private jwtUtil: JwtUtilService
+  ) {}
 
-  // Геттер для access токена
-  get accessToken(): string | null {
-    return this.tokenSubject.value;
-  }
-
-  private setToken(token: string): void {
-    this.tokenSubject.next(token);
-  }
-
-  login(data: LoginRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}Auth/login`, data, {
+  login(data: LoginRequest): Observable<ExecutionResponse<string>> {
+    return this.http.post<ExecutionResponse<string>>(`${this.apiUrl}login`, data, {
       withCredentials: true
     }).pipe(
-      tap((response) => {
-        if (response.isSuccess) {
-          this.setToken(response.token);
-        }
+      tap((res) => {
+        if (res.success) this.handleToken(res.result);
+      })
+    );
+  }
+
+  register(data: RegistrationRequest): Observable<ExecutionResponse<string>> {
+    return this.http.post<ExecutionResponse<string>>(`${this.apiUrl}register`, data, {
+      withCredentials: true
+    }).pipe(
+      tap((res) => {
+        if (res.success) this.handleToken(res.result);
       })
     );
   }
@@ -42,76 +45,36 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.apiUrl}Auth/google-login`, { idToken }, {
       withCredentials: true
     }).pipe(
-      tap((response) => {
-        if (response.isSuccess) {
-          this.setToken(response.token);
-        }
+      tap(res => {
+        if (res.isSuccess) this.handleToken(res.token);
       })
     );
   }
 
-  register(data: RegistrationRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}Auth/register`, data, {
+  refreshToken(): Observable<ExecutionResponse<string>> {
+    return this.http.post<ExecutionResponse<string>>(`${this.apiUrl}refresh`, {}, {
       withCredentials: true
     }).pipe(
-      tap((response) => {
-        if (response.isSuccess) {
-          this.setToken(response.token);
-        }
+      tap((res) => {
+        if (res.success) this.tokenService.set(res.result);
       })
     );
-  }
-
-  refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}Auth/refresh`, {}, {
-      withCredentials: true
-    }).pipe(
-      tap((response) => {
-        if (response.isSuccess) {
-          this.setToken(response.token);
-        }
-      })
-    );
-  }
-
-  decodeToken(token: string): {
-    id: string;
-    fullName: string;
-    email: string;
-    roles: string[] | string;
-  } {
-    const decodedToken: any = jwtDecode(token);
-    return {
-      id: decodedToken.sub,
-      fullName: decodedToken.name,
-      email: decodedToken.email,
-      roles: decodedToken.role || [],
-    };
-  }
-
-  getUserDetail(): any | null {
-    const token = this.accessToken;
-    if (!token) return null;
-    return this.decodeToken(token);
-  }
-
-  isLoggedIn(): boolean {
-    const token = this.accessToken;
-    if (!token) return false;
-    return !this.isTokenExpired();
-  }
-
-  private isTokenExpired(): boolean {
-    const token = this.accessToken;
-    if (!token) return true;
-    const decoded: any = jwtDecode(token);
-    const isTokenExpired = Date.now() >= decoded['exp'] * 1000;
-    if (isTokenExpired) this.logout();
-    return isTokenExpired;
   }
 
   logout(): void {
-    this.tokenSubject.next(null);
+    this.tokenService.clear();
+    this.userManager.clear();
     this.http.post(`${this.apiUrl}Auth/logout`, {}, { withCredentials: true }).subscribe();
+  }
+
+  isLoggedIn(): boolean {
+    const token = this.tokenService.accessToken;
+    return !!token && !this.tokenService.isExpired();
+  }
+
+  private handleToken(token: string): void {
+    this.tokenService.set(token);
+    const user = this.jwtUtil.decode(token);
+    this.userManager.setUser(user);
   }
 }

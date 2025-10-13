@@ -26,7 +26,7 @@ export class RegistrationComponent {
 
       this.authService.register(requestData).subscribe(
         (response) => {
-          if (response.isSuccess) {
+          if (response.success) {
             this.router.navigate(['/typing-game']);
           } else {
             alert('Registration failed: ' + response.message);

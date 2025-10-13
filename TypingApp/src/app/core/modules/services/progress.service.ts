@@ -14,22 +14,21 @@ export class ProgressService {
     getProgressByLessonId(userId: string, lessonId: number)
         : Observable<ExecutionResponse<LessonProgressResponse>> {
         return this.http.get<ExecutionResponse<LessonProgressResponse>>(
-            `${this.api}/read/${userId}/${lessonId}`
-        );
-    }
-    // ProgressService: повертає масив прогресу всіх уроків
-    getProgress(userId: string)
-        : Observable<ExecutionResponse<LessonProgressResponse[]>> {
-        return this.http.get<ExecutionResponse<LessonProgressResponse[]>>(
-            `${this.api}/read/${userId}`
+            `${this.api}/${userId}/${lessonId}`
         );
     }
 
+    getProgress(userId: string)
+        : Observable<ExecutionResponse<LessonProgressResponse[]>> {
+        return this.http.get<ExecutionResponse<LessonProgressResponse[]>>(
+            `${this.api}/${userId}`
+        );
+    }
 
     saveProgress(data: LessonProgress)
         : Observable<ExecutionResponse<LessonProgress>> {
         return this.http.post<ExecutionResponse<LessonProgress>>(
-            `${this.api}/write`, data
+            `${this.api}`, data
         );
     }
 }
